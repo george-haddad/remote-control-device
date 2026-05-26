@@ -1,6 +1,9 @@
 {
     "name": "remote-control-device-api",
-    "http": {
-        "port": 8080
-    }
+    "http.port": 8080,
+    "database.port": 5432,
+    "database.host": "localhost",
+    "database.name": "remotecontrol",
+    "database.user": "devicebackend",
+    "database.pass": ""
 }
