@@ -126,7 +126,7 @@ paths:
                 - remote-control
             summary: Partially updates a remote control device.
             description: partially update a remote control device by id in the backend.
-            operationId: updateDevicePartially
+            operationId: patchDevice
             parameters:
                 - name: deviceId
                   in: path
