@@ -1,0 +1,276 @@
+openapi: 3.1.0
+info:
+    title: Remote Control Device - OpenAPI 3.1
+    description: |-
+        This is a remote control device manager based on then OpenAPI 3.1 specification.
+    contact:
+        email: george-haddad@users.noreply.github.com
+    license:
+        name: MIT
+        url: https://mit-license.org/license.txt
+    version: 1.0.0
+servers:
+    - url: http://localhost:8080/api
+tags:
+    - name: remote-control
+      description: Managing your remote control devices at home
+paths:
+    /devices:
+        post:
+            tags:
+                - remote-control
+            summary: Add a new remote control device.
+            description: Add a new remote control device in the backend.
+            operationId: addDevice
+            requestBody:
+                description: Create a new remote control device in the backend.
+                content:
+                    application/json:
+                        schema:
+                            $ref: "#/components/schemas/Device"
+                required: true
+            responses:
+                "201":
+                    description: Successful operation
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/Device"
+                "400":
+                    description: Invalid input
+                "422":
+                    description: Validation exception
+                default:
+                    description: Unexpected error
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/Error"
+        get:
+            tags:
+                - remote-control
+            summary: Fetch all remote control devices.
+            description: Fetches all remote control devices in the backend.
+            operationId: fetchAllDevices
+            parameters:
+                - in: query
+                  name: brand
+                  schema:
+                      type: string
+                      enum: ["philips", "sony", "lg", "samsung"]
+                  required: false
+                - in: query
+                  name: state
+                  schema:
+                      type: string
+                      enum: ["available", "in-use", "inactive"]
+                  required: false
+            responses:
+                "200":
+                    description: successful operation
+                    content:
+                        application/json:
+                            schema:
+                                type: array
+                                items:
+                                    $ref: "#/components/schemas/Device"
+                default:
+                    description: Unexpected error
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/Error"
+    /devices/{deviceId}:
+        put:
+            tags:
+                - remote-control
+            summary: Update an existing remote control device.
+            description: Update an existing remote control device by id in the backend.
+            operationId: updateDevice
+            parameters:
+                - name: deviceId
+                  in: path
+                  description: ID of remote control device to return
+                  required: true
+                  schema:
+                      type: string
+                      format: uuid
+            requestBody:
+                description: Update an existing remote control device by id.
+                content:
+                    application/json:
+                        schema:
+                            $ref: "#/components/schemas/Device"
+                required: true
+            responses:
+                "200":
+                    description: Successful operation
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/Device"
+                "400":
+                    description: Invalid ID provided
+                "404":
+                    description: Device not found
+                "422":
+                    description: Validation exception
+                default:
+                    description: Unexpected error
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/Error"
+        patch:
+            tags:
+                - remote-control
+            summary: Partially updates a remote control device.
+            description: partially update a remote control device by id in the backend.
+            operationId: updateDevicePartially
+            parameters:
+                - name: deviceId
+                  in: path
+                  description: ID of device that needs to be partially updated
+                  required: true
+                  schema:
+                      type: string
+                      format: uuid
+            requestBody:
+                description: Partially update an existing remote control device by id.
+                content:
+                    application/json:
+                        schema:
+                            $ref: "#/components/schemas/Device"
+                required: true
+            responses:
+                "200":
+                    description: successfully updated
+                "400":
+                    description: Invalid input
+                "404":
+                    description: Device not found
+                "422":
+                    description: Validation exception
+                default:
+                    description: Unexpected error
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/Error"
+        get:
+            tags:
+                - remote-control
+            summary: Fetch remote control device.
+            description: Returns a single remote control device by id in the backend.
+            operationId: getDeviceById
+            parameters:
+                - name: deviceId
+                  in: path
+                  description: ID of remote control device to return
+                  required: true
+                  schema:
+                      type: string
+                      format: uuid
+            responses:
+                "200":
+                    description: successful operation
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/Device"
+                "400":
+                    description: Invalid ID supplied
+                "404":
+                    description: Device not found
+                default:
+                    description: Unexpected error
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/Error"
+        delete:
+            tags:
+                - remote-control
+            summary: Deletes a remote control device.
+            description: delete a remote control device by id from the backend.
+            operationId: deleteDevice
+            parameters:
+                - name: deviceId
+                  in: path
+                  description: device id to delete
+                  required: true
+                  schema:
+                      type: string
+                      format: uuid
+            responses:
+                "200":
+                    description: successful operation
+                "400":
+                    description: Invalid device value
+                "404":
+                    description: Device not found
+                default:
+                    description: Unexpected error
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/Error"
+components:
+    schemas:
+        Device:
+            required:
+                - name
+                - brand
+                - state
+            type: object
+            properties:
+                id:
+                    type: string
+                    format: uuid
+                    examples: ["019cd47c-ee87-7f3a-81f5-be5ddb57001f"]
+                name:
+                    type: string
+                    description: a name for the remote control
+                    examples: ["main", "bedroom", "living room", "movie hall"]
+                brand:
+                    type: string
+                    description: the brand of the remote control
+                    examples: ["philips", "sony", "lg", "samsung"]
+                state:
+                    type: string
+                    description: the state of the remote control device
+                    enum:
+                        - available
+                        - in-use
+                        - inactive
+                creation-time:
+                    type: string
+                    description: the creation timestamp of the entry in ISO-8601 format defaulted to UTC Time Zone
+                    examples: ["2026-05-26T18:00:00.000000Z"]
+        ApiResponse:
+            type: object
+            properties:
+                code:
+                    type: integer
+                    format: int32
+                type:
+                    type: string
+                message:
+                    type: string
+        Error:
+            type: object
+            properties:
+                code:
+                    type: string
+                message:
+                    type: string
+            required:
+                - code
+                - message
+    requestBodies:
+        Device:
+            description: Remote control device object that needs to be added to the backend
+            content:
+                application/json:
+                    schema:
+                        $ref: "#/components/schemas/Device"
