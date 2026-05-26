@@ -9,6 +9,7 @@
 
     <logger name="io.netty" level="warn"/>
     <logger name="io.vertx" level="info" />
+    <logger name="api" level="debug" />
 
     <root level="info">
         <appender-ref ref="STDOUT" />
