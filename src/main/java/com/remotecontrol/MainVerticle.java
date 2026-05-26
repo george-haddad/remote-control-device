@@ -1,5 +1,95 @@
 package com.remotecontrol;
 
-public class MainVerticle {
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import com.remotecontrol.api.ApiVerticle;
+
+import io.vertx.config.ConfigRetriever;
+import io.vertx.config.ConfigRetrieverOptions;
+import io.vertx.config.ConfigStoreOptions;
+import io.vertx.core.DeploymentOptions;
+import io.vertx.core.Future;
+import io.vertx.core.VerticleBase;
+import io.vertx.core.json.JsonObject;
+import io.vertx.pgclient.PgBuilder;
+import io.vertx.pgclient.PgConnectOptions;
+import io.vertx.sqlclient.Pool;
+import io.vertx.sqlclient.PoolOptions;
+
+public class MainVerticle extends VerticleBase {
+
+        private static final Logger logger = LoggerFactory.getLogger("api");
+        private final String configPath = "config.json";
+        private Pool sharedPool;
+
+        @Override
+        public Future<?> start() {
+                return loadConfig()
+                        .compose(config -> createPool())
+                        .compose(pool -> deployApiVerticle())
+                        .compose(id -> {
+                                logger.info("Successfully deployed all verticles");
+                                return Future.succeededFuture();
+                        });
+        }
+
+        private Future<String> deployApiVerticle() {
+                logger.info("Deploying ApiVerticle");
+
+                DeploymentOptions opts = new DeploymentOptions()
+                        .setInstances(1)
+                        .setConfig(config().copy());
+
+                return vertx.deployVerticle(() -> new ApiVerticle(sharedPool), opts)
+                        .onSuccess(id -> {
+                                logger.info("Deployed {} instances of ApiVerticle with deploymentId={}", opts.getInstances(), id);
+                        })
+                        .onFailure(err -> {
+                                logger.error("Failed to deploy ApiVerticle err={}", err.getMessage(), err.getCause());
+                        });
+        }
+
+
+        private Future<Pool> createPool() {
+                PgConnectOptions connectOptions = new PgConnectOptions()
+                                .setPort(config().getInteger("database.port").intValue())
+                                .setHost(config().getString("database.host"))
+                                .setDatabase(config().getString("database.name"))
+                                .setUser(config().getString("database.user"))
+                                .setPassword(config().getString("database.pass"));
+
+                final int availableCores = Runtime.getRuntime().availableProcessors() / 2;
+                PoolOptions poolOptions = new PoolOptions().setMaxSize(availableCores);
+
+                // pool operations are not pipelined, only connections acquired from the pool are pipelined
+                this.sharedPool = PgBuilder.pool()
+                        .with(poolOptions)
+                        .connectingTo(connectOptions)
+                        .using(vertx)
+                        .build();
+
+                logger.info("Built shared pgPool to host={} on database={} as user={}",
+                        config().getString("database.host"),
+                        config().getString("database.name"),
+                        config().getString("database.user"));
+
+                return Future.succeededFuture(sharedPool);
+        }
+
+        private Future<JsonObject> loadConfig() {
+                JsonObject configJson = new JsonObject().put("path", configPath);
+                ConfigStoreOptions configOpts = new ConfigStoreOptions().setType("file").setConfig(configJson);
+                ConfigRetrieverOptions retrieverOpts = new ConfigRetrieverOptions().addStore(configOpts);
+
+                ConfigRetriever retriever = ConfigRetriever.create(vertx, retrieverOpts);
+                return retriever.getConfig()
+                        .onSuccess(json -> {
+                                config().mergeIn(json);
+                                logger.info("Successfully loaded config for {}", config().getString("name"));
+                        })
+                        .onFailure(err -> {
+                                logger.error("Could not load config from {}", configJson.encode(), err);
+                        });
+        }
 }
