@@ -10,6 +10,8 @@ import io.vertx.ext.healthchecks.HealthChecks;
 import io.vertx.ext.healthchecks.Status;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.healthchecks.HealthCheckHandler;
+import io.vertx.ext.web.openapi.router.RouterBuilder;
+import io.vertx.openapi.contract.OpenAPIContract;
 import io.vertx.sqlclient.Pool;
 import io.vertx.sqlclient.SqlConnection;
 
@@ -24,26 +26,31 @@ public class ApiVerticle extends VerticleBase {
 
         @Override
         public Future<?> start() {
-                return createHealthChecks()
-                        .compose(hc -> createHttpServer(hc));
+                return getOpenApiContract("device-spec.yaml")
+                        .compose(contract -> createRouter(contract))
+                        .compose(router -> createHealthChecks(router))
+                        .compose(router -> createHttpServer(router));
         }
 
-        private Future<HttpServer> createHttpServer(HealthChecks hc) {
-                Router router = Router.router(vertx);
-                router.get("/health").handler(HealthCheckHandler.createWithHealthChecks(hc));
-
-                int port = config().getInteger("http.port").intValue();
-                HttpServer server = vertx.createHttpServer();
-                return server.requestHandler(router).listen(port)
-                        .onSuccess(httpServer -> {
-                                logger.info("HTTP server started on port {}", httpServer.actualPort());
-                        })
-                        .onFailure(throwable -> {
-                                logger.error("HTTP server could not start", throwable);
-                        });
+        private Future<OpenAPIContract> getOpenApiContract(String path) {
+                Future<OpenAPIContract> contract = OpenAPIContract.from(vertx, path);
+                return contract;
         }
 
-        private Future<HealthChecks> createHealthChecks() {
+        private Future<Router> createRouter(OpenAPIContract contract) {
+                DevicesHandler devicesHandler = new DevicesHandler(vertx);
+                RouterBuilder routerBuilder = RouterBuilder.create(vertx, contract);
+                routerBuilder.getRoute("addDevice").addHandler(devicesHandler::create);
+                routerBuilder.getRoute("getAllDevices").addHandler(devicesHandler::getAll);
+                routerBuilder.getRoute("updateDevice").addHandler(devicesHandler::update);
+                routerBuilder.getRoute("patchDevice").addHandler(devicesHandler::patch);
+                routerBuilder.getRoute("getDeviceById").addHandler(devicesHandler::get);
+                routerBuilder.getRoute("deleteDevice").addHandler(devicesHandler::delete);
+                Router router = routerBuilder.createRouter();
+                return Future.succeededFuture(router);
+        }
+
+        private Future<Router> createHealthChecks(Router router) {
                 HealthChecks hc = HealthChecks.create(vertx);
                 hc.register(
                         "api",
@@ -60,6 +67,21 @@ public class ApiVerticle extends VerticleBase {
                                 .onComplete(promise)
                 );
 
-                return Future.succeededFuture(hc);
+                router.get("/health")
+                        .handler(HealthCheckHandler.createWithHealthChecks(hc));
+
+                return Future.succeededFuture(router);
+        }
+
+        private Future<HttpServer> createHttpServer(Router router) {
+                int port = config().getInteger("http.port").intValue();
+                HttpServer server = vertx.createHttpServer();
+                return server.requestHandler(router).listen(port)
+                        .onSuccess(httpServer -> {
+                                logger.info("HTTP server started on port {}", httpServer.actualPort());
+                        })
+                        .onFailure(throwable -> {
+                                logger.error("HTTP server could not start", throwable);
+                        });
         }
 }
