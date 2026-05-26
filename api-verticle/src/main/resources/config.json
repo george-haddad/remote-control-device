@@ -1,0 +1,6 @@
+{
+    "name": "remote-control api",
+    "http": {
+        "port": 8080
+    }
+}
