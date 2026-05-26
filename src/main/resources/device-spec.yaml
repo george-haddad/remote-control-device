@@ -15,7 +15,7 @@ tags:
     - name: remote-control
       description: Managing your remote control devices at home
 paths:
-    /devices:
+    /api/devices:
         post:
             tags:
                 - remote-control
@@ -51,7 +51,7 @@ paths:
                 - remote-control
             summary: Fetch all remote control devices.
             description: Fetches all remote control devices in the backend.
-            operationId: fetchAllDevices
+            operationId: getAllDevices
             parameters:
                 - in: query
                   name: brand
@@ -80,7 +80,7 @@ paths:
                         application/json:
                             schema:
                                 $ref: "#/components/schemas/Error"
-    /devices/{deviceId}:
+    /api/devices/{deviceId}:
         put:
             tags:
                 - remote-control
