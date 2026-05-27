@@ -46,7 +46,7 @@ CREATE TABLE app.devices
     device_id uuid DEFAULT uuidv7(),
     device_name varchar(100) NOT NULL,
     device_brand varchar(100) NOT NULL,
-    device_state varchar(8) NOT NULL,
+    device_state varchar(10) NOT NULL,
     device_creation_time timestamp DEFAULT now(),
     CONSTRAINT device_state CHECK(device_state = 'available' or device_state = 'in-use' or device_state = 'inactive'),
     PRIMARY KEY(device_id)
