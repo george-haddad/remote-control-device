@@ -336,21 +336,66 @@ public class DevicesHandler {
                 logger.debug("PATCH route");
 
                 ValidatedRequest req = rc.get(RouterBuilder.KEY_META_DATA_VALIDATED_REQUEST);
-                JsonObject reqJson = req.getBody().getJsonObject();
                 String deviceId = req.getPathParameters().get("deviceId").getString();
+                JsonObject reqJson = req.getBody().getJsonObject();
+                reqJson.put("deviceId", deviceId);
                 logger.debug("Dumping path param={}", deviceId);
                 logger.debug("Dumping json object={}", reqJson.encode());
 
-                JsonObject device = new JsonObject()
-                                        .put("id", "550e8400-e29b-41d4-a716-446655440000")
-                                        .put("name", "whatever")
-                                        .put("brand", "samsung")
-                                        .put("state", "available")
-                                        .put("creation-time", "2026-05-26T18:00:00.000000Z");
-                rc.response()
-                        .putHeader("content-type", "application/json")
-                        .setStatusCode(200)
-                        .end(device.encode());
+                EventBus eb = vertx.eventBus();
+                DeliveryOptions opts = createDeliveryOpts("patchDevice", 3000L);
+
+                logger.debug("Sending message to device verticle via bus address={}", eb_address_devices);
+                Future<Message<JsonObject>> fut = eb.request(eb_address_devices, reqJson, opts);
+                fut.onSuccess(message -> {
+                        JsonObject resJson = message.body();
+                        logger.debug("Reply received from={} with body={}", message.address(), resJson);
+
+                        rc.response()
+                                .putHeader("Content-Type", "application/json")
+                                .setStatusCode(200)
+                                .end(resJson.encode());
+                })
+                .onFailure(err -> {
+                        HttpServerResponse res = rc.response();
+                        res.putHeader("Content-Type", "application/json");
+                        JsonObject errJson = new JsonObject();
+
+                        if(err instanceof ReplyException replyEx) {
+                                int code = replyEx.failureCode();
+                                ReplyFailure type = replyEx.failureType();
+                                String msg = replyEx.getMessage();
+
+                                logger.error("Received reply failure type={} code={} msg={}", type, code, msg);
+
+                                switch(type)
+                                {
+                                        case RECIPIENT_FAILURE: {
+                                                errJson.put("code", code);
+                                                errJson.put("message", msg);
+                                                res.setStatusCode(code);
+                                                break;
+                                        }
+
+                                        case NO_HANDLERS:
+                                        case TIMEOUT:
+                                        case ERROR:
+                                        default: {
+                                                errJson.put("code", 500);
+                                                errJson.put("message", "Could not complete operation=" + opts.getHeaders().get("action") + " due to an unknown error");
+                                                res.setStatusCode(500);
+                                                break;
+                                        }
+                                }
+
+                                res.end(errJson.encode());
+                        }
+                        else {
+                                errJson.put("code", 500);
+                                errJson.put("message", "Internal server error");
+                                res.end(errJson.encode());
+                        }
+                });
         }
 
         void delete(RoutingContext rc) {
