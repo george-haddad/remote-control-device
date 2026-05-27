@@ -52,7 +52,7 @@ public class ApiVerticle extends VerticleBase {
 
                 List<OpenAPIRoute> routes = routerBuilder.getRoutes();
                 for (OpenAPIRoute route : routes) {
-                        route.addFailureHandler(devicesHandler::validationError);
+                        route.addFailureHandler(devicesHandler::validationFailure);
                 }
 
                 Router router = routerBuilder.createRouter();
