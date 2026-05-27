@@ -1,5 +1,7 @@
 package com.remotecontrol.api;
 
+import java.util.List;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -10,6 +12,7 @@ import io.vertx.ext.healthchecks.HealthChecks;
 import io.vertx.ext.healthchecks.Status;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.healthchecks.HealthCheckHandler;
+import io.vertx.ext.web.openapi.router.OpenAPIRoute;
 import io.vertx.ext.web.openapi.router.RouterBuilder;
 import io.vertx.openapi.contract.OpenAPIContract;
 import io.vertx.sqlclient.Pool;
@@ -46,6 +49,12 @@ public class ApiVerticle extends VerticleBase {
                 routerBuilder.getRoute("patchDevice").addHandler(devicesHandler::patch);
                 routerBuilder.getRoute("getDeviceById").addHandler(devicesHandler::get);
                 routerBuilder.getRoute("deleteDevice").addHandler(devicesHandler::delete);
+
+                List<OpenAPIRoute> routes = routerBuilder.getRoutes();
+                for (OpenAPIRoute route : routes) {
+                        route.addFailureHandler(devicesHandler::validationError);
+                }
+
                 Router router = routerBuilder.createRouter();
                 return Future.succeededFuture(router);
         }
