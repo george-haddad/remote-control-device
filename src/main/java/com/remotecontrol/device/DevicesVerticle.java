@@ -34,7 +34,7 @@ public class DevicesVerticle extends VerticleBase {
         }
 
         private Future<MessageConsumer<String>> createHealthCheckConsumer() {
-                logger.debug("Creating health-check consumer on event-bus address={} ...", eb_address_devices_health);
+                logger.info("Creating health-check consumer on event-bus address={} ...", eb_address_devices_health);
 
                 EventBus eb = vertx.eventBus();
                 MessageConsumerOptions opts = new MessageConsumerOptions();
@@ -46,7 +46,7 @@ public class DevicesVerticle extends VerticleBase {
         }
 
         private Future<MessageConsumer<JsonObject>> createMessageConsumer() {
-                logger.debug("Creating message consumer on event-bus address={} ...", eb_address_devices);
+                logger.info("Creating message consumer on event-bus address={} ...", eb_address_devices);
 
                 EventBus eb = vertx.eventBus();
                 MessageConsumerOptions opts = new MessageConsumerOptions();

@@ -61,12 +61,16 @@ public class ApiVerticle extends VerticleBase {
         }
 
         private Future<Router> createHealthChecks(Router router) {
+                logger.info("Creating health-check on api route ...");
+
                 HealthChecks hc = HealthChecks.create(vertx);
                 hc.register(
                         "api",
                         1000L,
                         promise -> promise.complete(Status.OK())
                 );
+
+                logger.info("Creating health-check on database server ...");
 
                 hc.register(
                         "database",
@@ -76,6 +80,8 @@ public class ApiVerticle extends VerticleBase {
                                 .<Status>mapEmpty()
                                 .onComplete(promise)
                 );
+
+                logger.info("Creating health-check on event-bus address={} ...", "remotecontrol.devices");
 
                 DeliveryOptions opts = new DeliveryOptions();
                 opts.setLocalOnly(false);
@@ -97,6 +103,8 @@ public class ApiVerticle extends VerticleBase {
 
                 router.get("/health")
                         .handler(HealthCheckHandler.createWithHealthChecks(hc));
+
+                logger.info("Successfully registered all health-checks");
 
                 return Future.succeededFuture(router);
         }
