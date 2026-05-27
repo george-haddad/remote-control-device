@@ -11,13 +11,13 @@ import io.vertx.core.eventbus.MessageConsumerOptions;
 import io.vertx.core.json.JsonObject;
 import io.vertx.sqlclient.Pool;
 
-public class DeviceVerticle extends VerticleBase {
+public class DevicesVerticle extends VerticleBase {
 
         private final Logger logger = LoggerFactory.getLogger("devices");
         private final String eb_address_devices = "remotecontrol.devices";
         private final String eb_address_devices_health = "remotecontrol.devices.health";
 
-        public DeviceVerticle(Pool sharedPool) {
+        public DevicesVerticle(Pool sharedPool) {
 
         }
 

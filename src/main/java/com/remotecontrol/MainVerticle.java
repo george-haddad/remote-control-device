@@ -4,7 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.remotecontrol.api.ApiVerticle;
-import com.remotecontrol.device.DeviceVerticle;
+import com.remotecontrol.device.DevicesVerticle;
 
 import io.vertx.config.ConfigRetriever;
 import io.vertx.config.ConfigRetrieverOptions;
@@ -59,7 +59,7 @@ public class MainVerticle extends VerticleBase {
                         .setInstances(1)
                         .setConfig(config().copy());
 
-                return vertx.deployVerticle(() -> new DeviceVerticle(sharedPool), opts)
+                return vertx.deployVerticle(() -> new DevicesVerticle(sharedPool), opts)
                         .onSuccess(id -> {
                                 logger.info("Deployed {} instances of DevicesVerticle with deploymentId={}", opts.getInstances(), id);
                         })
