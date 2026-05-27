@@ -154,4 +154,49 @@ public class DeviceService {
                         .onSuccess(dev -> logger.info("Successfully deleted device with deviceId={}", deviceId))
                         .onFailure(err -> logger.error("Error deleting device with deviceId={}, message={}", deviceId, err.getMessage())));
         }
+
+        Future<Device> updateOne(String deviceId, Device device) {
+                final String sqlExists = "SELECT device_id FROM app.devices WHERE device_id = $1";
+                final String sqlUpdate = "UPDATE app.devices SET device_name = $1, device_brand = $2, device_state = $3 WHERE device_id = $4 AND device_state <> 'in-use' RETURNING *";
+
+                return sharedPool.withTransaction(client -> client
+                        .preparedQuery(sqlExists)
+                        .execute(Tuple.of(deviceId))
+                        .compose(rows -> {
+                                if(rows.size() < 1) {
+                                        return Future.failedFuture(new NoSuchElementException("Device with id does not exist"));
+                                }
+
+                                Tuple tuple = Tuple.of(
+                                        device.deviceName(),
+                                        device.deviceBrand(),
+                                        device.deviceState(),
+                                        deviceId
+                                );
+
+                                return client.preparedQuery(sqlUpdate)
+                                        .execute(tuple)
+                                        .map(RowSet::iterator)
+                                        .map(iter -> {
+                                                Device dev = null;
+                                                if(iter.hasNext()) {
+                                                        Row row = iter.next();
+                                                        dev = new Device(
+                                                                row.getUUID(0),
+                                                                row.getString(1),
+                                                                row.getString(2),
+                                                                row.getString(3),
+                                                                row.getLocalDateTime(4)
+                                                        );
+                                                }
+                                                else {
+                                                        throw new IllegalStateException("Device with id has a state of 'in-use' and cannot be updated");
+                                                }
+
+                                                return dev;
+                                        });
+                        })
+                        .onSuccess(dev -> logger.info("Successfully updated device of deviceId={}", dev.deviceId()))
+                        .onFailure(err -> logger.error("Error updating device with deviceId={} message={}", deviceId, err.getMessage())));
+        }
 }
