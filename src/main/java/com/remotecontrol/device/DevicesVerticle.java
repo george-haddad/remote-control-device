@@ -17,8 +17,10 @@ public class DevicesVerticle extends VerticleBase {
         private final String eb_address_devices = "remotecontrol.devices";
         private final String eb_address_devices_health = "remotecontrol.devices.health";
 
-        public DevicesVerticle(Pool sharedPool) {
+        private DeviceService service;
 
+        public DevicesVerticle(Pool sharedPool) {
+                this.service = new DeviceService(sharedPool);
         }
 
         @Override
@@ -53,7 +55,7 @@ public class DevicesVerticle extends VerticleBase {
                 opts.setLocalOnly(false);
                 opts.setAddress(eb_address_devices);
                 opts.setMaxBufferedMessages(1000);
-                MessageConsumer<JsonObject> consumer = eb.consumer(opts, new DevicesMessageHandler<>());
+                MessageConsumer<JsonObject> consumer = eb.consumer(opts, new DevicesMessageHandler<>(service));
                 return Future.succeededFuture(consumer);
         }
 }

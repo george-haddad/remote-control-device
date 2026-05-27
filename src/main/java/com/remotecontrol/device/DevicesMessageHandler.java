@@ -10,9 +10,10 @@ import io.vertx.core.json.JsonObject;
 public class DevicesMessageHandler<E> implements Handler<Message<JsonObject>> {
 
         private final Logger logger = LoggerFactory.getLogger("devices");
+        private DeviceService service;
 
-        public DevicesMessageHandler() {
-
+        public DevicesMessageHandler(DeviceService service) {
+                this.service = service;
         }
 
         @Override
