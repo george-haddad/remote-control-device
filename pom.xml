@@ -16,7 +16,7 @@
         <maven-surefire-plugin.version>2.22.2</maven-surefire-plugin.version>
         <exec-maven-plugin.version>3.0.0</exec-maven-plugin.version>
 
-        <vertx.version>5.0.12</vertx.version>
+        <vertx.version>5.1.0</vertx.version>
         <junit-jupiter.version>5.9.1</junit-jupiter.version>
         <jib.version>3.5.1</jib.version>
         <slf4j.version>2.0.18</slf4j.version>
