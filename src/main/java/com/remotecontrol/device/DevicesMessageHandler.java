@@ -1,9 +1,13 @@
 package com.remotecontrol.device;
 
+import java.util.NoSuchElementException;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import io.vertx.core.Future;
 import io.vertx.core.Handler;
+import io.vertx.core.eventbus.DeliveryOptions;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonObject;
 
@@ -70,7 +74,28 @@ public class DevicesMessageHandler<E> implements Handler<Message<JsonObject>> {
 
                 logger.debug("Received message={} on address={} with headers[action={},domain={}]", body.encode(), event.address(), action, domain);
 
-                // TODO business logic code here aka "service" layer
+                Device device = new Device(
+                        null,
+                        body.getString("name"),
+                        body.getString("brand"),
+                        body.getString("state").toLowerCase(),
+                        null
+                );
+
+                service.createOne(device)
+                        .compose(dev -> createResponse(dev))
+                        .onSuccess(json -> {
+                                DeliveryOptions opts = createDeliveryOpts(action, 3000L);
+                                event.reply(json, opts);
+                        })
+                        .onFailure(err -> {
+                                if (err instanceof NoSuchElementException) {
+                                        event.fail(404, err.getMessage());
+                                }
+                                else {
+                                        event.fail(500, err.getMessage());
+                                }
+                        });
         }
 
         private void fetchMany(Message<JsonObject> event) {
@@ -131,5 +156,26 @@ public class DevicesMessageHandler<E> implements Handler<Message<JsonObject>> {
                 logger.debug("Received message={} on address={} with headers[action={},domain={}]",  body.encode(), event.address(), action, domain);
 
                 // TODO business logic code here aka "service" layer
+        }
+
+        //--------------
+
+        private DeliveryOptions createDeliveryOpts(String action, long timeout) {
+                DeliveryOptions opts = new DeliveryOptions();
+                opts.setLocalOnly(false);
+                opts.setSendTimeout(timeout);
+                opts.addHeader("action", action);
+                opts.addHeader("domain", "device");
+                return opts;
+        }
+
+        private Future<JsonObject> createResponse(Device device) {
+                JsonObject json = new JsonObject();
+                json.put("id", device.deviceId().toString());
+                json.put("name", device.deviceName().toString());
+                json.put("brand", device.deviceBrand());
+                json.put("state", device.deviceState());
+                json.put("creation-time", device.deviceCreationTime().toString());
+                return Future.succeededFuture(json);
         }
 }
