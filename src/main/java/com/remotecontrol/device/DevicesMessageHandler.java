@@ -9,6 +9,7 @@ import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.eventbus.DeliveryOptions;
 import io.vertx.core.eventbus.Message;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
 public class DevicesMessageHandler<E> implements Handler<Message<JsonObject>> {
@@ -110,7 +111,14 @@ public class DevicesMessageHandler<E> implements Handler<Message<JsonObject>> {
                         return;
                 }
 
-                // TODO business logic code here aka "service" layer
+                service.fetchAll()
+                        .compose(devices -> createResponseMany(devices))
+                        .onSuccess(json -> {
+                                event.reply(json, createDeliveryOpts(action, 3000L));
+                        })
+                        .onFailure(err -> {
+                                event.fail(500, err.getMessage());
+                        });
         }
 
         private void updateOne(Message<JsonObject> event) {
@@ -181,12 +189,27 @@ public class DevicesMessageHandler<E> implements Handler<Message<JsonObject>> {
         }
 
         private Future<JsonObject> createResponse(Device device) {
-                JsonObject json = new JsonObject();
-                json.put("id", device.deviceId().toString());
-                json.put("name", device.deviceName().toString());
-                json.put("brand", device.deviceBrand());
-                json.put("state", device.deviceState());
-                json.put("creation-time", device.deviceCreationTime().toString());
+                JsonObject json = new JsonObject()
+                        .put("id", device.deviceId().toString())
+                        .put("name", device.deviceName().toString())
+                        .put("brand", device.deviceBrand())
+                        .put("state", device.deviceState())
+                        .put("creation-time", device.deviceCreationTime().toString());
                 return Future.succeededFuture(json);
+        }
+
+        private Future<JsonArray> createResponseMany(Device[] devices) {
+                JsonArray jarray = new JsonArray();
+                for (Device device : devices) {
+                        jarray.add(new JsonObject()
+                                .put("id", device.deviceId().toString())
+                                .put("name", device.deviceName().toString())
+                                .put("brand", device.deviceBrand())
+                                .put("state", device.deviceState())
+                                .put("creation-time", device.deviceCreationTime().toString())
+                        );
+                }
+
+                return Future.succeededFuture(jarray);
         }
 }

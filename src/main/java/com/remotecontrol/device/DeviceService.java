@@ -1,5 +1,7 @@
 package com.remotecontrol.device;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.NoSuchElementException;
 
 import org.slf4j.Logger;
@@ -8,6 +10,7 @@ import org.slf4j.LoggerFactory;
 import io.vertx.core.Future;
 import io.vertx.sqlclient.Pool;
 import io.vertx.sqlclient.Row;
+import io.vertx.sqlclient.RowIterator;
 import io.vertx.sqlclient.RowSet;
 import io.vertx.sqlclient.Tuple;
 
@@ -82,5 +85,34 @@ public class DeviceService {
                         })
                         .onSuccess(dev -> logger.info("Successfully fetched device with deviceId={}", dev.deviceId()))
                         .onFailure(err -> logger.error("Error fetching device with deviceId={}, message={}", deviceId, err.getMessage()));
+        }
+
+        Future<Device[]> fetchAll() {
+                final String sql = "SELECT device_id, device_name, device_brand, device_state, device_creation_time FROM app.devices";
+
+                return sharedPool.preparedQuery(sql)
+                        .execute()
+                        .map(rows -> {
+                                RowIterator<Row> iter  = rows.iterator();
+                                List<Device> list = new ArrayList<>(rows.size());
+
+                                while(iter.hasNext()) {
+                                        Row row = iter.next();
+                                        Device dev = new Device(
+                                                row.getUUID(0),
+                                                row.getString(1),
+                                                row.getString(2),
+                                                row.getString(3),
+                                                row.getLocalDateTime(4)
+                                        );
+
+                                        list.add(dev);
+                                }
+
+                                Device[] devices = list.toArray(new Device[list.size()]);
+                                return devices;
+                        })
+                        .onSuccess(devices -> logger.info("Successfully fetched all devices"))
+                        .onFailure(err -> logger.error("Error fetching all devices message={}", err.getMessage()));
         }
 }
