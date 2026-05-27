@@ -54,4 +54,33 @@ public class DeviceService {
                         .onSuccess(dev -> logger.info("Successfully inserted device with deviceId={}", dev.deviceId()))
                         .onFailure(err -> logger.error("Error inserting device", err.getMessage())));
         }
+
+        Future<Device> fetchOne(String deviceId) {
+                final String sql = "SELECT device_id, device_name, device_brand, device_state, device_creation_time FROM app.devices WHERE device_id = $1";
+                final Tuple tuple = Tuple.of(deviceId);
+
+                return sharedPool.preparedQuery(sql)
+                        .execute(tuple)
+                        .map(RowSet::iterator)
+                        .map(iter -> {
+                                Device dev = null;
+                                if(iter.hasNext()) {
+                                        Row row = iter.next();
+                                        dev = new Device(
+                                                row.getUUID(0),
+                                                row.getString(1),
+                                                row.getString(2),
+                                                row.getString(3),
+                                                row.getLocalDateTime(4)
+                                        );
+                                }
+                                else {
+                                        throw new NoSuchElementException("Device with id does not exist");
+                                }
+
+                                return dev;
+                        })
+                        .onSuccess(dev -> logger.info("Successfully fetched device with deviceId={}", dev.deviceId()))
+                        .onFailure(err -> logger.error("Error fetching device with deviceId={}, message={}", deviceId, err.getMessage()));
+        }
 }
