@@ -4,6 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.remotecontrol.api.ApiVerticle;
+import com.remotecontrol.device.DeviceVerticle;
 
 import io.vertx.config.ConfigRetriever;
 import io.vertx.config.ConfigRetrieverOptions;
@@ -28,6 +29,7 @@ public class MainVerticle extends VerticleBase {
                 return loadConfig()
                         .compose(config -> createPool())
                         .compose(pool -> deployApiVerticle())
+                        .compose(id -> deployDevicesVerticle())
                         .compose(id -> {
                                 logger.info("Successfully deployed all verticles");
                                 return Future.succeededFuture();
@@ -50,6 +52,21 @@ public class MainVerticle extends VerticleBase {
                         });
         }
 
+        private Future<String> deployDevicesVerticle() {
+                logger.info("Deploying DevicesVerticle");
+
+                DeploymentOptions opts = new DeploymentOptions()
+                        .setInstances(1)
+                        .setConfig(config().copy());
+
+                return vertx.deployVerticle(() -> new DeviceVerticle(sharedPool), opts)
+                        .onSuccess(id -> {
+                                logger.info("Deployed {} instances of DevicesVerticle with deploymentId={}", opts.getInstances(), id);
+                        })
+                        .onFailure(err -> {
+                                logger.error("Failed to deploy DevicesVerticle err={}", err.getMessage(), err.getCause());
+                        });
+        }
 
         private Future<Pool> createPool() {
                 PgConnectOptions connectOptions = new PgConnectOptions()
