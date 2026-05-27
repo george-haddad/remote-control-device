@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory;
 
 import io.vertx.core.Future;
 import io.vertx.core.VerticleBase;
+import io.vertx.core.eventbus.DeliveryOptions;
 import io.vertx.core.http.HttpServer;
 import io.vertx.ext.healthchecks.HealthChecks;
 import io.vertx.ext.healthchecks.Status;
@@ -74,6 +75,24 @@ public class ApiVerticle extends VerticleBase {
                                 .compose(SqlConnection::close)
                                 .<Status>mapEmpty()
                                 .onComplete(promise)
+                );
+
+                DeliveryOptions opts = new DeliveryOptions();
+                opts.setLocalOnly(false);
+                opts.setSendTimeout(1000L);
+                opts.addHeader("health", "health");
+
+                hc.register(
+                        "event-bus/remotecontrol.devices",
+                        1000L,
+                        promise -> vertx.eventBus().request("remotecontrol.devices.health", "ping", opts)
+                                .onSuccess(msg -> {
+                                        promise.complete(Status.OK());
+                                })
+                                .onFailure(err -> {
+                                        logger.error(err.getMessage());
+                                        promise.complete(Status.KO());
+                                })
                 );
 
                 router.get("/health")
