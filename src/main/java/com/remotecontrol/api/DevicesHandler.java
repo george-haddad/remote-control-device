@@ -16,7 +16,7 @@ import io.vertx.ext.web.openapi.router.RouterBuilder;
 import io.vertx.openapi.validation.RequestParameter;
 import io.vertx.openapi.validation.ValidatedRequest;
 
-public class DevicesHandler extends AbstractRouteHandler {
+public class DevicesHandler extends DevicesHandlerBase {
 
         private final Logger logger = LoggerFactory.getLogger("api");
         private final String eb_address_devices = "remotecontrol.devices";

@@ -10,11 +10,11 @@ import io.vertx.core.http.HttpServerResponse;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
 
-public abstract class AbstractRouteHandler {
+public abstract class DevicesHandlerBase {
 
         private final Logger logger = LoggerFactory.getLogger("api");
 
-        public AbstractRouteHandler() {
+        public DevicesHandlerBase() {
 
         }
 
