@@ -10,6 +10,7 @@ import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.DeliveryOptions;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.eventbus.Message;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.openapi.router.RouterBuilder;
@@ -108,9 +109,9 @@ public class DevicesHandler extends DevicesHandlerBase {
                 DeliveryOptions opts = createDeliveryOpts("getAllDevices", 3000L);
 
                 logger.debug("Sending message to device verticle via bus address={}", eb_address_devices);
-                Future<Message<JsonObject>> fut = eb.request(eb_address_devices, reqJson, opts);
+                Future<Message<JsonArray>> fut = eb.request(eb_address_devices, reqJson, opts);
                 fut.onSuccess(message -> {
-                        JsonObject resJson = message.body();
+                        JsonArray resJson = message.body();
                         logger.debug("Reply received from={} with body={}", message.address(), resJson);
 
                         rc.response()

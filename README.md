@@ -30,6 +30,79 @@ A backend service that manages remote control devices via a RESTful API
 git clone git@github.com:george-haddad/remote-control-device.git
 ```
 
+2. Pull the database container
+
+```shell script
+docker pull postgres:18.4-alpine3.23
+```
+
+3. Run the database container
+
+```shell script
+docker run --name rc-devices-postgresql \
+  -e POSTGRES_USER=postgres \
+  -e POSTGRES_PASSWORD=P@ssW0rd12345 \
+  -e POSTGRES_DB=postgres \
+  -p 5432:5432 \
+  -d postgres:18.4-alpine3.23
+```
+
+4. Run the DB migration script (TODO: replace with Sqitch)
+
+This would connect to the databse as the main root user and setup the following
+
+- User named `devicebackend` with a pre-encrypted password
+- Database named `remote-control`
+- Schema named `app` in the `remote-control` database
+- Grant `devicebackend` privileges to modify the `app` schema in the `remote-control` database
+- Table named `devices` in the `app` schema
+
+```shell script
+psql -h localhost -U postgres -d postgres -a -f db/temp_db_creation.sql
+```
+
+5. Build the backend
+
+```shell script
+./mvnw clean package
+```
+
+6. Run the backend
+
+```shell script
+./mvnw exec:java
+```
+
+7. Test the health end-points
+
+```shell script
+curl http://localhost:8080/health --header 'Accept: application/json'
+{
+	"status": "DOWN",
+	"checks": [
+		{
+			"id": "event-bus",
+			"status": "UP",
+			"checks": [
+				{
+					"id": "remotecontrol.devices",
+					"status": "UP"
+				}
+			]
+		},
+		{
+			"id": "database",
+			"status": "UP",
+		},
+		{
+			"id": "api",
+			"status": "UP"
+		}
+	],
+	"outcome": "UP"
+}
+```
+
 ## APIs
 
 # Architecture
@@ -37,7 +110,6 @@ git clone git@github.com:george-haddad/remote-control-device.git
 ## Platform
 
 ## Software
-
 
 # Conventions
 

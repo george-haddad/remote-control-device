@@ -113,8 +113,8 @@ paths:
           description: Invalid ID provided
         "404":
           description: Device not found
-        "422":
-          description: Validation exception
+        "409":
+          description: Device cannot be updated because its state is 'in-use'
         default:
           description: Unexpected error
           content:
@@ -141,8 +141,8 @@ paths:
           description: Invalid input
         "404":
           description: Device not found
-        "422":
-          description: Validation exception
+        "409":
+          description: Device fields name and brand cannot be updated individually if the state of the device is 'in-use'
         default:
           description: Unexpected error
           content:
@@ -185,6 +185,8 @@ paths:
           description: Invalid device value
         "404":
           description: Device not found
+        "409":
+          description: Device cannot be deleted because its state is 'in-use'
         default:
           description: Unexpected error
           content:
