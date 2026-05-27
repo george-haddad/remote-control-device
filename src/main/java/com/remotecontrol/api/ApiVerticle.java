@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory;
 
 import io.vertx.core.Future;
 import io.vertx.core.VerticleBase;
+import io.vertx.core.eventbus.DeliveryOptions;
 import io.vertx.core.http.HttpServer;
 import io.vertx.ext.healthchecks.HealthChecks;
 import io.vertx.ext.healthchecks.Status;
@@ -60,12 +61,16 @@ public class ApiVerticle extends VerticleBase {
         }
 
         private Future<Router> createHealthChecks(Router router) {
+                logger.info("Creating health-check on api route ...");
+
                 HealthChecks hc = HealthChecks.create(vertx);
                 hc.register(
                         "api",
                         1000L,
                         promise -> promise.complete(Status.OK())
                 );
+
+                logger.info("Creating health-check on database server ...");
 
                 hc.register(
                         "database",
@@ -76,8 +81,30 @@ public class ApiVerticle extends VerticleBase {
                                 .onComplete(promise)
                 );
 
+                logger.info("Creating health-check on event-bus address={} ...", "remotecontrol.devices");
+
+                DeliveryOptions opts = new DeliveryOptions();
+                opts.setLocalOnly(false);
+                opts.setSendTimeout(1000L);
+                opts.addHeader("health", "health");
+
+                hc.register(
+                        "event-bus/remotecontrol.devices",
+                        1000L,
+                        promise -> vertx.eventBus().request("remotecontrol.devices.health", "ping", opts)
+                                .onSuccess(msg -> {
+                                        promise.complete(Status.OK());
+                                })
+                                .onFailure(err -> {
+                                        logger.error(err.getMessage());
+                                        promise.complete(Status.KO());
+                                })
+                );
+
                 router.get("/health")
                         .handler(HealthCheckHandler.createWithHealthChecks(hc));
+
+                logger.info("Successfully registered all health-checks");
 
                 return Future.succeededFuture(router);
         }
