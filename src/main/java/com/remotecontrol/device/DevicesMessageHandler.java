@@ -174,7 +174,22 @@ public class DevicesMessageHandler<E> implements Handler<Message<JsonObject>> {
 
                 logger.debug("Received message={} on address={} with headers[action={},domain={}]",  body.encode(), event.address(), action, domain);
 
-                // TODO business logic code here aka "service" layer
+                service.removeOne(deviceId)
+                        .compose(device -> createResponse(device))
+                        .onSuccess(json -> {
+                                event.reply(json, createDeliveryOpts(action, 3000L));
+                        })
+                        .onFailure(err -> {
+                                if (err instanceof NoSuchElementException) {
+                                        event.fail(404, err.getMessage());
+                                }
+                                else if (err instanceof IllegalStateException) {
+                                        event.fail(409, err.getMessage());
+                                }
+                                else {
+                                        event.fail(500, err.getMessage());
+                                }
+                        });
         }
 
         //--------------

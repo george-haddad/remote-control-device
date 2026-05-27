@@ -115,4 +115,43 @@ public class DeviceService {
                         .onSuccess(devices -> logger.info("Successfully fetched all devices"))
                         .onFailure(err -> logger.error("Error fetching all devices message={}", err.getMessage()));
         }
+
+        Future<Device> removeOne(String deviceId) {
+                final String sqlExists = "SELECT device_id FROM app.devices WHERE device_id = $1";
+                final String sqlDelete = "DELETE FROM app.devices WHERE device_id = $1 AND device_state <> 'in-use' RETURNING *";
+                final Tuple tuple = Tuple.of(deviceId);
+
+                return sharedPool.withTransaction(client -> client
+                        .preparedQuery(sqlExists)
+                        .execute(tuple)
+                        .compose(rows -> {
+                                if(rows.size() < 1) {
+                                        return Future.failedFuture(new NoSuchElementException("Device with id does not exist"));
+                                }
+
+                                return client.preparedQuery(sqlDelete)
+                                        .execute(tuple)
+                                        .map(RowSet::iterator)
+                                        .map(iter -> {
+                                                Device dev = null;
+                                                if(iter.hasNext()) {
+                                                        Row row = iter.next();
+                                                        dev = new Device(
+                                                                row.getUUID(0),
+                                                                row.getString(1),
+                                                                row.getString(2),
+                                                                row.getString(3),
+                                                                row.getLocalDateTime(4)
+                                                        );
+                                                }
+                                                else {
+                                                        throw new IllegalStateException("Device with id has a state of 'in-use' and cannot be deleted");
+                                                }
+
+                                                return dev;
+                                        });
+                        })
+                        .onSuccess(dev -> logger.info("Successfully deleted device with deviceId={}", deviceId))
+                        .onFailure(err -> logger.error("Error deleting device with deviceId={}, message={}", deviceId, err.getMessage())));
+        }
 }

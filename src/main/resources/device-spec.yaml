@@ -185,6 +185,8 @@ paths:
           description: Invalid device value
         "404":
           description: Device not found
+        "409":
+          description: Device cannot be deleted because its state is 'in-use'
         default:
           description: Unexpected error
           content:
