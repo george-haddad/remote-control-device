@@ -20,7 +20,7 @@ import io.vertx.sqlclient.PoolOptions;
 
 public class MainVerticle extends VerticleBase {
 
-        private static final Logger logger = LoggerFactory.getLogger("api");
+        private static final Logger logger = LoggerFactory.getLogger("main");
         private final String configPath = "config.json";
         private Pool sharedPool;
 

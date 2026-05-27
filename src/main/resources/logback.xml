@@ -11,6 +11,7 @@
     <logger name="io.vertx" level="info" />
     <logger name="api" level="debug" />
     <logger name="devices" level="debug" />
+    <logger name="main" level="debug" />
 
     <root level="info">
         <appender-ref ref="STDOUT" />
