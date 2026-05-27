@@ -163,7 +163,32 @@ public class DevicesMessageHandler<E> implements Handler<Message<JsonObject>> {
 
                 logger.debug("Received message={} on address={} with headers[action={},domain={}]", body.encode(), event.address(), action, domain);
 
-                // TODO business logic code here aka "service" layer
+                Device device = new Device(
+                        null,
+                        body.getString("name", null),
+                        body.getString("brand", null),
+
+                        // I am not proud of this
+                        body.containsKey("state") ? body.getString("state").toLowerCase() : null,
+                        null
+                );
+
+                service.patchOne(deviceId, device)
+                        .compose(res -> createResponse(res))
+                        .onSuccess(json -> {
+                                event.reply(json, createDeliveryOpts(action, 3000L));
+                        })
+                        .onFailure(err -> {
+                                if (err instanceof NoSuchElementException) {
+                                        event.fail(404, err.getMessage());
+                                }
+                                else if (err instanceof IllegalStateException) {
+                                        event.fail(409, err.getMessage());
+                                }
+                                else {
+                                        event.fail(500, err.getMessage());
+                                }
+                        });
         }
 
         private void fetchOne(Message<JsonObject> event) {
@@ -214,8 +239,6 @@ public class DevicesMessageHandler<E> implements Handler<Message<JsonObject>> {
                                 }
                         });
         }
-
-        //--------------
 
         private DeliveryOptions createDeliveryOpts(String action, long timeout) {
                 DeliveryOptions opts = new DeliveryOptions();

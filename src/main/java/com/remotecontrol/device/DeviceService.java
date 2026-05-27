@@ -196,7 +196,77 @@ public class DeviceService {
                                                 return dev;
                                         });
                         })
-                        .onSuccess(dev -> logger.info("Successfully updated device of deviceId={}", dev.deviceId()))
+                        .onSuccess(dev -> logger.info("Successfully updated device with deviceId={}", dev.deviceId()))
                         .onFailure(err -> logger.error("Error updating device with deviceId={} message={}", deviceId, err.getMessage())));
+        }
+
+        Future<Device> patchOne(String deviceId, Device device) {
+                final String sqlExists = "SELECT device_id FROM app.devices WHERE device_id = $1";
+
+                return sharedPool.withTransaction(client -> client
+                        .preparedQuery(sqlExists)
+                        .execute(Tuple.of(deviceId))
+                        .compose(rows -> {
+                                if(rows.size() < 1) {
+                                        return Future.failedFuture(new NoSuchElementException("Device with id does not exist"));
+                                }
+
+                                List<String> tupleList = new ArrayList<>(5);
+
+                                int i = 1;
+                                StringBuilder sb = new StringBuilder();
+                                sb.append("UPDATE app.devices SET ");
+                                if (device.deviceName() != null) {
+                                        sb.append("device_name = $");
+                                        sb.append(i++);
+                                        sb.append(',');
+                                        tupleList.add(device.deviceName());
+                                }
+
+                                if (device.deviceBrand() != null) {
+                                        sb.append(" device_brand = $");
+                                        sb.append(i++);
+                                        sb.append(',');
+                                        tupleList.add(device.deviceBrand());
+                                }
+
+                                if (device.deviceState() != null) {
+                                        sb.append(" device_state = $");
+                                        sb.append(i++);
+                                        sb.append(',');
+                                        tupleList.add(device.deviceState());
+                                }
+
+                                // remove trailing comma
+                                sb.deleteCharAt(sb.length()-1);
+                                sb.append(" WHERE device_id = $").append(i++).append(" AND device_state <> 'in-use' RETURNING *");
+                                tupleList.add(deviceId);
+
+                                final String sqlUpdate = sb.toString();
+
+                                return client.preparedQuery(sqlUpdate)
+                                        .execute(Tuple.from(tupleList))
+                                        .map(RowSet::iterator)
+                                        .map(iter -> {
+                                                Device dev = null;
+                                                if(iter.hasNext()) {
+                                                        Row row = iter.next();
+                                                        dev = new Device(
+                                                                row.getUUID(0),
+                                                                row.getString(1),
+                                                                row.getString(2),
+                                                                row.getString(3),
+                                                                row.getLocalDateTime(4)
+                                                        );
+                                                }
+                                                else {
+                                                        throw new IllegalStateException("Device with id has a state of 'in-use' and cannot be updated");
+                                                }
+
+                                                return dev;
+                                        });
+                        })
+                        .onSuccess(dev -> logger.info("Successfully patched device with deviceId={}", dev.deviceId()))
+                        .onFailure(err -> logger.error("Error patching device with deviceId={} message={}", deviceId, err.getMessage())));
         }
 }
