@@ -30,53 +30,63 @@ A backend service that manages remote control devices via a RESTful API
 git clone git@github.com:george-haddad/remote-control-device.git
 ```
 
-2. Pull the database container
+2. Create a `.env` file in the base repo and put the following values
+
+```plain
+# API
+NAME=remote-control-device-api
+DB_HOST=db
+DB_PORT=5432
+DB_NAME=remote-control
+DB_USER=devicebackend
+DB_PASS=Tablet9-Saddling-Undocked-Glance
+HTTP_PORT=8080
+
+# DB
+POSTGRES_USER=postgres
+POSTGRES_PASSWORD=P@ssW0rd12345
+POSTGRES_DB=postgres
+```
+
+The `DB_PASS` should not be changed as this value is needed to automatically setup the database. This is because the same password is pre-encrypted in the `db/temp_db_creation.sql` script. This is mainly for convenience, in production this wouldn't be the case.
+
+3. Pull the database docker image
 
 ```shell script
 docker pull postgres:18.4-alpine3.23
 ```
 
-3. Run the database container
-
-```shell script
-docker run --name rc-devices-postgresql \
-  -e POSTGRES_USER=postgres \
-  -e POSTGRES_PASSWORD=P@ssW0rd12345 \
-  -e POSTGRES_DB=postgres \
-  -p 5432:5432 \
-  -d postgres:18.4-alpine3.23
-```
-
-4. Run the DB migration script (TODO: replace with Sqitch)
-
-This would connect to the databse as the main root user and setup the following
-
-- User named `devicebackend` with a pre-encrypted password
-- Database named `remote-control`
-- Schema named `app` in the `remote-control` database
-- Grant `devicebackend` privileges to modify the `app` schema in the `remote-control` database
-- Table named `devices` in the `app` schema
-
-```shell script
-psql -h localhost -U postgres -d postgres -a -f db/temp_db_creation.sql
-```
-
-5. Build the backend
+4. Build the backend
 
 ```shell script
 ./mvnw clean package
 ```
 
-6. Run the backend
+5. Build the backend docker image
 
 ```shell script
-./mvnw exec:java
+./mvnw jib:dockerBuild
 ```
+
+6. Bring up both docker images
+
+```shell script
+docker compose up
+```
+
+This should run the backend `remotecontrol-api` and the database `remotecontrol-db` on the docker network.
 
 7. Test the health end-points
 
+Here we expect the backend to be in a degraded state.
+
 ```shell script
 curl http://localhost:8080/health --header 'Accept: application/json'
+```
+
+The response will show the database is down due to an authentication failure.
+
+```json
 {
 	"status": "DOWN",
 	"checks": [
@@ -92,7 +102,65 @@ curl http://localhost:8080/health --header 'Accept: application/json'
 		},
 		{
 			"id": "database",
+			"status": "DOWN",
+			"data": {
+				"cause": "FATAL: password authentication failed for user \"devicebackend\" (28P01)"
+			}
+		},
+		{
+			"id": "api",
+			"status": "UP"
+		}
+	],
+	"outcome": "DOWN"
+}
+```
+
+8. Setup the database
+
+This command will connect to the database as the admin user and setup the following:
+
+- User named `devicebackend` with a pre-encrypted password (the one from the `.env` file in step **2.**)
+- Database named `remote-control`
+- Schema named `app` in the `remote-control` database
+- Grant `devicebackend` privileges to modify the `app` schema in the `remote-control` database
+- Table named `devices` in the `app` schema
+
+**Note**: Be sure to enter the postgres admin password from `.env` file in step **2.**
+
+```shell script
+psql -h localhost -U postgres -d postgres -a -f db/temp_db_creation.sql
+```
+
+There should be the output of the SQL script dumped in the terminal.
+
+8. Test the health end-points (again)
+
+Here we expect the backend to be in a healthy state.
+
+```shell script
+curl http://localhost:8080/health --header 'Accept: application/json'
+```
+
+The response will show that all resources are **UP** and running!
+
+```json
+{
+	"status": "UP",
+	"checks": [
+		{
+			"id": "event-bus",
 			"status": "UP",
+			"checks": [
+				{
+					"id": "remotecontrol.devices",
+					"status": "UP"
+				}
+			]
+		},
+		{
+			"id": "database",
+			"status": "UP"
 		},
 		{
 			"id": "api",
@@ -103,7 +171,17 @@ curl http://localhost:8080/health --header 'Accept: application/json'
 }
 ```
 
+9. Start using the backend
+
+View the API documentation in `src/main/resources/device-spec.yaml`.
+
+**Note**: The reason the spec file is hidden away there is because the backend uses the spec to create its router with route validations as described in the spec. You may upload the spec into an OpenAPI 3.1 render such as [Swagger Editor](https://editor.swagger.io/) or any other tool that supports the spec.
+
 ## APIs
+
+The RESTful APIs follow OpenAPI spec v3.1.0
+
+See `src/main/resources/device-spec.yaml`
 
 # Architecture
 
