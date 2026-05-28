@@ -41,7 +41,7 @@ public class MainVerticle extends VerticleBase {
                 logger.info("Deploying ApiVerticle");
 
                 DeploymentOptions opts = new DeploymentOptions()
-                        .setInstances(1)
+                        .setInstances(3)
                         .setConfig(config().copy());
 
                 return vertx.deployVerticle(() -> new ApiVerticle(sharedPool), opts)
@@ -57,7 +57,7 @@ public class MainVerticle extends VerticleBase {
                 logger.info("Deploying DevicesVerticle");
 
                 DeploymentOptions opts = new DeploymentOptions()
-                        .setInstances(1)
+                        .setInstances(2)
                         .setConfig(config().copy());
 
                 return vertx.deployVerticle(() -> new DevicesVerticle(sharedPool), opts)
