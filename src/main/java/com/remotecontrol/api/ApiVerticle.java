@@ -110,7 +110,7 @@ public class ApiVerticle extends VerticleBase {
         }
 
         private Future<HttpServer> createHttpServer(Router router) {
-                int port = config().getInteger("http.port").intValue();
+                int port = config().getInteger("HTTP_PORT").intValue();
                 HttpServer server = vertx.createHttpServer();
                 return server.requestHandler(router).listen(port)
                         .onSuccess(httpServer -> {
