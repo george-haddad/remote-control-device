@@ -88,28 +88,26 @@ public class DevicesHandler extends DevicesHandlerBase {
                 ValidatedRequest req = rc.get(RouterBuilder.KEY_META_DATA_VALIDATED_REQUEST);
                 Map<String,RequestParameter> queryMap = req.getQuery();
 
-                JsonObject reqJson = new JsonObject();
-                reqJson.put("deviceId", "*");
-
+                JsonObject queryParams = new JsonObject();
                 if(!queryMap.isEmpty()) {
-                        if(queryMap.containsKey("state")) {
-                                String stateValue = queryMap.get("state").getString();
-                                reqJson.put("state", stateValue);
+                        if(!queryMap.get("state").isEmpty()) {
+                                String stateValue = queryMap.get("state").getString().toLowerCase();
+                                queryParams.put("state", stateValue);
                         }
 
-                        if(queryMap.containsKey("brand")) {
-                                String brandValue = queryMap.get("brand").getString();
-                                reqJson.put("brand", brandValue);
+                        if(!queryMap.get("brand").isEmpty()) {
+                                String brandValue = queryMap.get("brand").getString().toLowerCase();
+                                queryParams.put("brand", brandValue);
                         }
                 }
 
-                logger.debug("Dumping request json={}", reqJson.encode());
+                logger.debug("Dumping request queryParams={}", queryParams.encode());
 
                 EventBus eb = vertx.eventBus();
                 DeliveryOptions opts = createDeliveryOpts("getAllDevices", 3000L);
 
                 logger.debug("Sending message to device verticle via bus address={}", eb_address_devices);
-                Future<Message<JsonArray>> fut = eb.request(eb_address_devices, reqJson, opts);
+                Future<Message<JsonArray>> fut = eb.request(eb_address_devices, queryParams, opts);
                 fut.onSuccess(message -> {
                         JsonArray resJson = message.body();
                         logger.debug("Reply received from={} with body={}", message.address(), resJson);

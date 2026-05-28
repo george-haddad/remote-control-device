@@ -8,11 +8,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import io.vertx.core.Future;
+import io.vertx.core.json.JsonObject;
 import io.vertx.sqlclient.Pool;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.RowIterator;
 import io.vertx.sqlclient.RowSet;
 import io.vertx.sqlclient.Tuple;
+import io.vertx.sqlclient.internal.ArrayTuple;
 
 public class DeviceService {
 
@@ -87,11 +89,38 @@ public class DeviceService {
                         .onFailure(err -> logger.error("Error fetching device with deviceId={}, message={}", deviceId, err.getMessage()));
         }
 
-        Future<Device[]> fetchAll() {
-                final String sql = "SELECT device_id, device_name, device_brand, device_state, device_creation_time FROM app.devices";
+        Future<Device[]> fetchAll(JsonObject queryParams) {
+                StringBuilder sb = new StringBuilder("SELECT device_id, device_name, device_brand, device_state, device_creation_time FROM app.devices");
+                List<String> tupleList = new ArrayList<>(5);
+
+                if (!queryParams.isEmpty()) {
+                        int i = 1;
+                        sb.append(" WHERE ");
+                        if (queryParams.containsKey("state")) {
+                                sb.append("device_state = $");
+                                sb.append(i++);
+                                tupleList.add(queryParams.getString("state"));
+                        }
+
+                        if (queryParams.containsKey("brand")) {
+                                if (i > 1) sb.append(" AND ");
+                                sb.append("device_brand = $");
+                                sb.append(i++);
+                                tupleList.add(queryParams.getString("brand"));
+                        }
+                }
+
+                final String sql = sb.toString();
+                final Tuple tuple;
+                if(!queryParams.isEmpty()) {
+                        tuple = Tuple.from(tupleList);
+                }
+                else {
+                        tuple = ArrayTuple.EMPTY;
+                }
 
                 return sharedPool.preparedQuery(sql)
-                        .execute()
+                        .execute(tuple)
                         .map(rows -> {
                                 RowIterator<Row> iter  = rows.iterator();
                                 List<Device> list = new ArrayList<>(rows.size());
