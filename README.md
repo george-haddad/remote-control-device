@@ -3,7 +3,6 @@
 ![vertx](https://img.shields.io/badge/vert.x-5.1.0-purple.svg?style=for-the-badge&logo=eclipsevertdotx&logoColor=white?style=for-the-badge)
 ![postgresql](https://img.shields.io/badge/PostgreSQL-18.4-316192?style=for-the-badge&logo=postgresql&logoColor=white)
 ![docker](https://img.shields.io/badge/docker-29.4.3-316192?style=for-the-badge&logo=docker&logoColor=white)
-![sqitch](https://img.shields.io/badge/sqitch-1.6.1-316192?style=for-the-badge&logoColor=white)
 ![java](https://img.shields.io/badge/java-25.0.3-orange?style=for-the-badge&logoColor=white)
 ![maven](https://img.shields.io/badge/maven-3.9.2-orange?style=for-the-badge&logoColor=white)
 
@@ -14,7 +13,6 @@ A backend service that manages remote control devices via a RESTful API
 - Java Temurin JDK 25 LTS - programming language
 - Apache Maven 3.9.2 - build automation
 - Docker 29.4.3 - containers (alpine)
-- Sqitch 1.6.1 - database migrations
 - Editorconfig - source formatting
 
 ## Platform
@@ -129,12 +127,12 @@ This command will connect to the database as the admin user and setup the follow
 **Note**: Be sure to enter the postgres admin password from `.env` file in step **2.**
 
 ```shell script
-psql -h localhost -U postgres -d postgres -a -f db/temp_db_creation.sql
+psql -h localhost -U postgres -d postgres -a -f db/database_setup.sql
 ```
 
 There should be the output of the SQL script dumped in the terminal.
 
-8. Test the health end-points (again)
+9. Test the health end-points (again)
 
 Here we expect the backend to be in a healthy state.
 
@@ -171,7 +169,7 @@ The response will show that all resources are **UP** and running!
 }
 ```
 
-9. Start using the backend
+10. Start using the backend
 
 View the API documentation in `src/main/resources/device-spec.yaml`.
 
