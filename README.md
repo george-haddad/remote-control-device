@@ -46,7 +46,7 @@ POSTGRES_PASSWORD=P@ssW0rd12345
 POSTGRES_DB=postgres
 ```
 
-The `DB_PASS` should not be changed as this value is needed to automatically setup the database. This is because the same password is pre-encrypted in the `db/temp_db_creation.sql` script. This is mainly for convenience, in production this wouldn't be the case.
+The `DB_PASS` should not be changed as this value is needed to automatically setup the database. This is because the same password is pre-encrypted in the `db/database_setup.sql` script. This is mainly for convenience, in production this wouldn't be the case.
 
 3. Pull the database docker image
 
