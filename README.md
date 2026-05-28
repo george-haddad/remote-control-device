@@ -183,9 +183,35 @@ See `src/main/resources/device-spec.yaml`
 
 # Architecture
 
+**Top Most Level**
+![diag1](./docs/diag1.png)
+
+**Sequence for Add Device**
+![diag2](./docs/diag2.png)
+
 ## Platform
 
+The 2 verticles are packaged together in the same container. The ApiVerticle is accessible via an HttpServer to process API requests. The DeviceVerticle is connected to the ApiVerticle via the vertx event-bus under a specific address. This verticle consumes messages from the ApiVerticle and owns persistence to the database.
+
+The database is a standard PostgreSQL relational database. The DB is setup in a secure way so that only the DeviceVerticle has access to perform operations on it.
+
+The event-bus supports publish/subscribe, point-to-point, and request-response messaging styles. Messages are sent to an address assigned to the DeviceVerticle. Vertx will then route them to just one of the handlers registered at that address. If there are many handlers registered at the same address then only one will be chosen using a non-strict round-robin algorithm. When a message is received by the DeviceVerticle, and has been handled, it will reply to the message with a result or a failure. Messaging in vertx is done by "best-effort delivery." This means that vertx event-bus sub-system does its best to deliver the messages and won't consciously discard them. This is one reason we use time-outs at every request-response msg and reply. Should anything fail without the other end getting a fail or acknowledge signal, then the timeout will signify a delivery failure to be handled.
+
+However, in case of catastrophic failure of all or parts of the event bus then there will be a possibility that messages might be lost.
+
 ## Software
+
+The backend is composed of vertx verticles and these are defined by the feature domain. All verticles are configured and deployed by the main verticle. There is an ApiVerticle that acts as the main api-entry point to the backend. From there requests are routed to their appropriate handlers as defined by the OpenAPI v1.3 spec. The handlers send the request to be processed to the DeviceVerticle as a message over the event-bus. The message is then processed and persisted in a database using a shared connection pool. The DeviceVerticle then replies back with a result or an error. There are timeouts set on every msg request/response to ensure fail fast and a responsive experience. The reason to use an event-bus is so that internal verticle communication does not need to be burdened by HTTP overhead.
+
+- MainVerticle
+  - ApiVerticle
+    - DevicesHandler
+    - DevicesHandlerBase
+  - Device
+    - DevicesVerticle
+    - DevicesMessageHandler
+    - DeviceService
+    - Device
 
 # Conventions
 
