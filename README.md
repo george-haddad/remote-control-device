@@ -183,9 +183,35 @@ See `src/main/resources/device-spec.yaml`
 
 # Architecture
 
+**Top Most Level**
+![diag1](./docs/diag1.png)
+
+**Sequence for Add Device**
+![diag2](./docs/diag2.png)
+
 ## Platform
 
+The 2 verticles are packaged together in the same container. The ApiVerticle is accessible via an HttpServer to process API requests. The DeviceVerticle is connected to the ApiVerticle via the vertx event-bus under a specific address. This verticle consumes messages from the ApiVerticle and owns persistence to the database.
+
+The database is a standard PostgreSQL relational database. The DB is setup in a secure way so that only the DeviceVerticle has access to perform operations on it.
+
+The event-bus supports publish/subscribe, point-to-point, and request-response messaging styles. Messages are sent to an address assigned to the DeviceVerticle. Vertx will then route them to just one of the handlers registered at that address. If there are many handlers registered at the same address then only one will be chosen using a non-strict round-robin algorithm. When a message is received by the DeviceVerticle, and has been handled, it will reply to the message with a result or a failure. Messaging in vertx is done by "best-effort delivery." This means that vertx event-bus sub-system does its best to deliver the messages and won't consciously discard them. This is one reason we use time-outs at every request-response msg and reply. Should anything fail without the other end getting a fail or acknowledge signal, then the timeout will signify a delivery failure to be handled.
+
+However, in case of catastrophic failure of all or parts of the event bus then there will be a possibility that messages might be lost.
+
 ## Software
+
+The backend is composed of vertx verticles and these are defined by the feature domain. All verticles are configured and deployed by the main verticle. There is an ApiVerticle that acts as the main api-entry point to the backend. From there requests are routed to their appropriate handlers as defined by the OpenAPI v1.3 spec. The handlers send the request to be processed to the DeviceVerticle as a message over the event-bus. The message is then processed and persisted in a database using a shared connection pool. The DeviceVerticle then replies back with a result or an error. There are timeouts set on every msg request/response to ensure fail fast and a responsive experience. The reason to use an event-bus is so that internal verticle communication does not need to be burdened by HTTP overhead.
+
+- MainVerticle
+  - ApiVerticle
+    - DevicesHandler
+    - DevicesHandlerBase
+  - Device
+    - DevicesVerticle
+    - DevicesMessageHandler
+    - DeviceService
+    - Device
 
 # Conventions
 
@@ -240,9 +266,35 @@ Below is a short and concise list of commit prefixes with a short description.
   - Do not prefix tables.
   - Do not prefix columns.
 
-# Diagrams
-
-
 # TODOs
 
-These are items for future consideration
+A small note, most of these points are improvements for enabling massive scaling. Vertx already is built to be very fast and utilize all cores and virtual threads on the underlying hardware. Pushing this thing in a k8s cluster with a distributed DB and messaging system means you want to scale massively. The trade-off is A LOT of work, maintenance and test of patience. For the most part a simple non-k8s setup is mostly what is needed, of course with good backups and some redundancy.
+
+- Platform
+  - Implement the clustering either using vertx infinispan cluster or go full stateless nodes with distributed messaging instead of vertx event-bus
+  - Production grade data-base migrations with sqitch for scalability, release and full DB auditability
+  - Metrics like OpenTelemetry, Grafana, Loki ...etc.
+  - Load balancer on the API entry. Cloud native or in-house (nodejs/vertx/nginx)
+  - Versioning using a hybrid of trunk-ver + semver, see [https://trunkver.org/](https://trunkver.org/)
+  - CI/CD pipeline with the usual build, lint, packaging, code scans, code coverage ...etc.
+  - If we go clustering then k3s + argocd + GatewayAPI + Envoy + zitadel + StackGres ... there are many nice things out there
+  - Multi-tenancy with RowLevelSecurity in Postgres and stateless services design and PKI
+- API
+  - More fine grained specs in the OpenAPI spec
+  - Pagination support for very large lists
+  - Cache layer like Redis or ValKey so most unchanged calls just get from the cache
+- Auth
+  - Authentication platform to perform initial authentication, OIDC or OAuth based
+  - Requests cannot reach the verticles without an authenticated token
+  - Verticles validate tokens and roles via cached introspection end-point (or similar)
+  - Role Based Access Control is good, and token exchange RFC-8693 for m2m or ai-agent access
+- Testing
+  - More robust integration testing between verticles
+  - Testing timeouts between services and stressing them
+  - Stress, Load, Spike, Chaos, Mutation Testing automated
+  - Automated regression testing would be nice (sqitch is great for verifying DB change and rolling back issues after the fact)
+- Security
+  - Automated API scans using Owasp ZAP (in pipeline)
+  - Automated performance testing with [https://www.sitespeed.io/](https://www.sitespeed.io/)
+  - Automated SSL testing with something like sslyze see [https://github.com/nabla-c0d3/sslyze](https://github.com/nabla-c0d3/sslyze)
+  - Automated backups and automated DR recovery (wow we became critical infrastructure at this point)
