@@ -102,16 +102,10 @@ public class DevicesMessageHandler<E> implements Handler<Message<JsonObject>> {
                 String action = event.headers().get("action");
                 String domain = event.headers().get("domain");
                 JsonObject body = event.body();
-                String deviceId = body.getString("deviceId");
 
                 logger.debug("Received message={} on address={} with headers[action={},domain={}]", body.encode(), event.address(), action, domain);
 
-                if (!deviceId.equals("*")) {
-                        event.fail(500, "Cannot fetch all devices due to invalid id");
-                        return;
-                }
-
-                service.fetchAll()
+                service.fetchAll(body)
                         .compose(devices -> createResponseMany(devices))
                         .onSuccess(json -> {
                                 event.reply(json, createDeliveryOpts(action, 3000L));
