@@ -12,6 +12,7 @@ import io.vertx.config.ConfigStoreOptions;
 import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Future;
 import io.vertx.core.VerticleBase;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.pgclient.PgBuilder;
 import io.vertx.pgclient.PgConnectOptions;
@@ -70,11 +71,11 @@ public class MainVerticle extends VerticleBase {
 
         private Future<Pool> createPool() {
                 PgConnectOptions connectOptions = new PgConnectOptions()
-                                .setPort(config().getInteger("database.port").intValue())
-                                .setHost(config().getString("database.host"))
-                                .setDatabase(config().getString("database.name"))
-                                .setUser(config().getString("database.user"))
-                                .setPassword(config().getString("database.pass"));
+                                .setPort(config().getInteger("DB_PORT").intValue())
+                                .setHost(config().getString("DB_HOST"))
+                                .setDatabase(config().getString("DB_NAME"))
+                                .setUser(config().getString("DB_USER"))
+                                .setPassword(config().getString("DB_PASS"));
 
                 final int availableCores = Runtime.getRuntime().availableProcessors() / 2;
                 PoolOptions poolOptions = new PoolOptions().setMaxSize(availableCores);
@@ -87,23 +88,38 @@ public class MainVerticle extends VerticleBase {
                         .build();
 
                 logger.info("Built shared pgPool to host={} on database={} as user={}",
-                        config().getString("database.host"),
-                        config().getString("database.name"),
-                        config().getString("database.user"));
+                        config().getString("DB_HOST"),
+                        config().getString("DB_NAME"),
+                        config().getString("DB_USER"));
 
                 return Future.succeededFuture(sharedPool);
         }
 
         private Future<JsonObject> loadConfig() {
                 JsonObject configJson = new JsonObject().put("path", configPath);
-                ConfigStoreOptions configOpts = new ConfigStoreOptions().setType("file").setConfig(configJson);
-                ConfigRetrieverOptions retrieverOpts = new ConfigRetrieverOptions().addStore(configOpts);
+                ConfigStoreOptions fileStore = new ConfigStoreOptions().setType("file").setConfig(configJson);
+
+                ConfigStoreOptions envStore = new ConfigStoreOptions()
+                        .setType("env")
+                        .setConfig(new JsonObject()
+                                .put("keys", new JsonArray()
+                                        .add("NAME")
+                                        .add("DB_HOST")
+                                        .add("DB_PORT")
+                                        .add("DB_NAME")
+                                        .add("DB_USER")
+                                        .add("DB_PASS")
+                                        .add("HTTP_PORT")));
+
+                ConfigRetrieverOptions retrieverOpts = new ConfigRetrieverOptions()
+                        .addStore(fileStore)  // load first
+                        .addStore(envStore);  // overrides fileStore if env-vars exist (we are in a docker)
 
                 ConfigRetriever retriever = ConfigRetriever.create(vertx, retrieverOpts);
                 return retriever.getConfig()
                         .onSuccess(json -> {
                                 config().mergeIn(json);
-                                logger.info("Successfully loaded config for {}", config().getString("name"));
+                                logger.info("Successfully loaded config for {}", config().getString("NAME"));
                         })
                         .onFailure(err -> {
                                 logger.error("Could not load config from {}", configJson.encode(), err);

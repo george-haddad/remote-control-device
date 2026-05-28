@@ -1,9 +1,9 @@
 {
-    "name": "remote-control-device-api",
-    "http.port": 8080,
-    "database.port": 5432,
-    "database.host": "localhost",
-    "database.name": "remote-control",
-    "database.user": "devicebackend",
-    "database.pass": "Tablet9-Saddling-Undocked-Glance"
+    "NAME": "remote-control-device-api",
+    "DB_HOST": "localhost",
+    "DB_PORT": 5432,
+    "DB_NAME": "remote-control",
+    "DB_USER": "devicebackend",
+    "DB_PASS": "Tablet9-Saddling-Undocked-Glance",
+    "HTTP_PORT": 8080
 }
