@@ -1,7 +1,7 @@
 # remote-control-device
 
-![vertx](https://img.shields.io/badge/vert.x-5.0.12-purple.svg?style=for-the-badge&logo=eclipsevertdotx&logoColor=white?style=for-the-badge)
-![postgresql](https://img.shields.io/badge/PostgreSQL-18.2-316192?style=for-the-badge&logo=postgresql&logoColor=white)
+![vertx](https://img.shields.io/badge/vert.x-5.1.0-purple.svg?style=for-the-badge&logo=eclipsevertdotx&logoColor=white?style=for-the-badge)
+![postgresql](https://img.shields.io/badge/PostgreSQL-18.4-316192?style=for-the-badge&logo=postgresql&logoColor=white)
 ![docker](https://img.shields.io/badge/docker-29.4.3-316192?style=for-the-badge&logo=docker&logoColor=white)
 ![sqitch](https://img.shields.io/badge/sqitch-1.6.1-316192?style=for-the-badge&logoColor=white)
 ![java](https://img.shields.io/badge/java-25.0.3-orange?style=for-the-badge&logoColor=white)
@@ -19,8 +19,8 @@ A backend service that manages remote control devices via a RESTful API
 
 ## Platform
 
-- Eclipse Vert.x 5.0.12
-- PostgreSQL 18.2
+- Eclipse Vert.x 5.1.0
+- PostgreSQL 18.4
 
 ## Quick Start
 
