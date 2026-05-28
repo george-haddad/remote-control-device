@@ -124,7 +124,7 @@ This command will connect to the database as the admin user and setup the follow
 - Grant `devicebackend` privileges to modify the `app` schema in the `remote-control` database
 - Table named `devices` in the `app` schema
 
-**Note**: Be sure to enter the postgres admin password from `.env` file in step **2.**
+**Note**: Be sure to enter the postgres admin password from `.env` file in step **2.** and that you have `psql` binary installed.
 
 ```shell script
 psql -h localhost -U postgres -d postgres -a -f db/database_setup.sql
