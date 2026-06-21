@@ -11,17 +11,18 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
-        <maven-compiler-plugin.version>3.8.1</maven-compiler-plugin.version>
+        <maven-compiler-plugin.version>3.15.0</maven-compiler-plugin.version>
         <maven-shade-plugin.version>3.2.4</maven-shade-plugin.version>
-        <maven-surefire-plugin.version>2.22.2</maven-surefire-plugin.version>
-        <exec-maven-plugin.version>3.0.0</exec-maven-plugin.version>
-
-        <vertx.version>5.1.0</vertx.version>
-        <junit-jupiter.version>5.9.1</junit-jupiter.version>
+        <maven-surefire-plugin.version>3.5.6</maven-surefire-plugin.version>
+        <exec-maven-plugin.version>3.6.3</exec-maven-plugin.version>
+        
+        <vertx.version>5.1.2</vertx.version>
+        <junit-jupiter.version>6.1.0</junit-jupiter.version>
         <jib.version>3.5.1</jib.version>
         <slf4j.version>2.0.18</slf4j.version>
-        <logback.version>1.5.32</logback.version>
+        <logback.version>1.5.34</logback.version>
 
+        <java.version>25</java.version>
         <main.verticle>com.remotecontrol.MainVerticle</main.verticle>
         <launcher.class>io.vertx.launcher.application.VertxApplication</launcher.class>
     </properties>
@@ -43,38 +44,55 @@
         <dependency>
             <groupId>io.vertx</groupId>
             <artifactId>vertx-launcher-application</artifactId>
+            <version>${vertx.version}</version>
         </dependency>
+
         <dependency>
             <groupId>io.vertx</groupId>
             <artifactId>vertx-config</artifactId>
+            <version>${vertx.version}</version>
         </dependency>
+
         <dependency>
             <groupId>io.vertx</groupId>
             <artifactId>vertx-health-check</artifactId>
+            <version>${vertx.version}</version>
         </dependency>
+        
         <dependency>
             <groupId>io.vertx</groupId>
             <artifactId>vertx-web</artifactId>
+            <version>${vertx.version}</version>
         </dependency>
+        
         <dependency>
             <groupId>io.vertx</groupId>
             <artifactId>vertx-pg-client</artifactId>
+            <version>${vertx.version}</version>
         </dependency>
+        
         <dependency>
             <groupId>io.vertx</groupId>
             <artifactId>vertx-json-schema</artifactId>
+            <version>${vertx.version}</version>
         </dependency>
+        
         <dependency>
             <groupId>io.vertx</groupId>
             <artifactId>vertx-openapi</artifactId>
+            <version>${vertx.version}</version>
         </dependency>
+        
         <dependency>
             <groupId>io.vertx</groupId>
             <artifactId>vertx-web-openapi-router</artifactId>
+            <version>${vertx.version}</version>
         </dependency>
+
         <dependency>
             <groupId>io.vertx</groupId>
             <artifactId>vertx-web-client</artifactId>
+            <version>${vertx.version}</version>
         </dependency>
 
         <!-- Other -->
@@ -84,11 +102,13 @@
             <artifactId>slf4j-api</artifactId>
             <version>${slf4j.version}</version>
         </dependency>
+        
         <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
             <version>${logback.version}</version>
         </dependency>
+
         <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-core</artifactId>
@@ -102,12 +122,14 @@
             <artifactId>vertx-junit5</artifactId>
             <scope>test</scope>
         </dependency>
+
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-api</artifactId>
             <version>${junit-jupiter.version}</version>
             <scope>test</scope>
         </dependency>
+
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-engine</artifactId>
@@ -122,7 +144,7 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>${maven-compiler-plugin.version}</version>
                 <configuration>
-                    <release>25</release>
+                    <release>${java.version}</release>
                 </configuration>
             </plugin>
 
