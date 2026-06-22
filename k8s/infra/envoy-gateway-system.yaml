@@ -1,8 +1,8 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: envoy-gateway
-  namespace: argocd
+  name: remote-control-envoy-gateway
+  namespace: remote-control
 spec:
   project: default
   source:
@@ -12,7 +12,7 @@ spec:
     repoURL: docker.io/envoyproxy
     targetRevision: v1.8.0
   destination:
-    namespace: envoy-gateway-system
+    namespace: remote-control
     server: https://kubernetes.default.svc
   syncPolicy:
     syncOptions:
