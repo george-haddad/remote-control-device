@@ -175,6 +175,26 @@ View the API documentation in `src/main/resources/device-spec.yaml`.
 
 **Note**: The reason the spec file is hidden away there is because the backend uses the spec to create its router with route validations as described in the spec. You may upload the spec into an OpenAPI 3.1 render such as [Swagger Editor](https://editor.swagger.io/) or any other tool that supports the spec.
 
+## Kubernetes
+
+Push docker image to local k3s registry
+
+```shell script
+docker save  remotecontrol-api:latest | sudo k3s ctr images import -
+```
+
+Stop / Start / Status of your k3s cluster
+
+```shell script
+sudo systemctl [stop|start|status] k3s
+```
+
+Install homestead as an ArgoCD application
+
+```shell script
+kubectl apply -f argocd-application.yaml
+```
+
 ## APIs
 
 The RESTful APIs follow OpenAPI spec v3.1.0
