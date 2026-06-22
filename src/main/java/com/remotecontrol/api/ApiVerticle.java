@@ -33,7 +33,15 @@ public class ApiVerticle extends VerticleBase {
                 return getOpenApiContract("device-spec.yaml")
                         .compose(contract -> createRouter(contract))
                         .compose(router -> createHealthChecks(router))
-                        .compose(router -> createHttpServer(router));
+                        .compose(router -> createReadinessCheck(router))
+                        .compose(router -> createHttpServer(router))
+                        .onSuccess(server -> {
+                                logger.info("Successfully initialized ApiVerticle with event-bus, routers, health and readiness checks");
+                        })
+                        .onFailure(err -> {
+                                logger.error("Failed to initialize ApiVerticle err={}", err.getMessage(), err);
+                        });
+
         }
 
         private Future<OpenAPIContract> getOpenApiContract(String path) {
@@ -101,11 +109,22 @@ public class ApiVerticle extends VerticleBase {
                                 })
                 );
 
-                router.get("/health")
-                        .handler(HealthCheckHandler.createWithHealthChecks(hc));
+                router.get("/health").handler(HealthCheckHandler.createWithHealthChecks(hc));
 
                 logger.info("Successfully registered all health-checks");
 
+                return Future.succeededFuture(router);
+        }
+
+        private Future<Router> createReadinessCheck(Router router) {
+                HealthChecks hc = HealthChecks.create(vertx);
+                hc.register(
+                        "ready",
+                        1000L,
+                        promise -> promise.complete(Status.OK())
+                );
+
+                router.get("/readiness").handler(HealthCheckHandler.createWithHealthChecks(hc));
                 return Future.succeededFuture(router);
         }
 

@@ -1,23 +1,23 @@
 # remote-control-device
 
-![vertx](https://img.shields.io/badge/vert.x-5.1.0-purple.svg?style=for-the-badge&logo=eclipsevertdotx&logoColor=white?style=for-the-badge)
+![vertx](https://img.shields.io/badge/vert.x-5.1.2-purple.svg?style=for-the-badge&logo=eclipsevertdotx&logoColor=white?style=for-the-badge)
 ![postgresql](https://img.shields.io/badge/PostgreSQL-18.4-316192?style=for-the-badge&logo=postgresql&logoColor=white)
-![docker](https://img.shields.io/badge/docker-29.4.3-316192?style=for-the-badge&logo=docker&logoColor=white)
+![docker](https://img.shields.io/badge/docker-29.5.3-316192?style=for-the-badge&logo=docker&logoColor=white)
 ![java](https://img.shields.io/badge/java-25.0.3-orange?style=for-the-badge&logoColor=white)
-![maven](https://img.shields.io/badge/maven-3.9.2-orange?style=for-the-badge&logoColor=white)
+![maven](https://img.shields.io/badge/maven-3.9.12-orange?style=for-the-badge&logoColor=white)
 
 A backend service that manages remote control devices via a RESTful API
 
 ## Build System
 
 - Java Temurin JDK 25 LTS - programming language
-- Apache Maven 3.9.2 - build automation
-- Docker 29.4.3 - containers (alpine)
+- Apache Maven 3.9.12 - build automation
+- Docker 29.5.3 - containers (alpine)
 - Editorconfig - source formatting
 
 ## Platform
 
-- Eclipse Vert.x 5.1.0
+- Eclipse Vert.x 5.1.2
 - PostgreSQL 18.4
 
 ## Quick Start
@@ -174,6 +174,26 @@ The response will show that all resources are **UP** and running!
 View the API documentation in `src/main/resources/device-spec.yaml`.
 
 **Note**: The reason the spec file is hidden away there is because the backend uses the spec to create its router with route validations as described in the spec. You may upload the spec into an OpenAPI 3.1 render such as [Swagger Editor](https://editor.swagger.io/) or any other tool that supports the spec.
+
+## Kubernetes
+
+Push docker image to local k3s registry
+
+```shell script
+docker save  remotecontrol-api:latest | sudo k3s ctr images import -
+```
+
+Stop / Start / Status of your k3s cluster
+
+```shell script
+sudo systemctl [stop|start|status] k3s
+```
+
+Install homestead as an ArgoCD application
+
+```shell script
+kubectl apply -f argocd-application.yaml
+```
 
 ## APIs
 

@@ -4,22 +4,17 @@ services:
   api:
     image: remotecontrol-api:latest
     container_name: remotecontrol-api
+    env_file: .env
     ports:
       - "8080:8080"
     depends_on:
-      - db
-    environment:
-      - NAME
-      - DB_HOST
-      - DB_PORT
-      - DB_NAME
-      - DB_USER
-      - DB_PASS
-      - HTTP_PORT
+      db:
+        condition: service_started
 
   db:
     image: postgres:18.4-alpine3.23
     container_name: postgres-database
+    env_file: ./db/.env
     ports:
       - "5432:5432"
     environment:

@@ -22,7 +22,7 @@ import io.vertx.sqlclient.PoolOptions;
 public class MainVerticle extends VerticleBase {
 
         private static final Logger logger = LoggerFactory.getLogger("main");
-        private final String configPath = "config.json";
+        private final String config_path = "config.json";
         private Pool sharedPool;
 
         @Override
@@ -41,7 +41,7 @@ public class MainVerticle extends VerticleBase {
                 logger.info("Deploying ApiVerticle");
 
                 DeploymentOptions opts = new DeploymentOptions()
-                        .setInstances(3)
+                        .setInstances(1)
                         .setConfig(config().copy());
 
                 return vertx.deployVerticle(() -> new ApiVerticle(sharedPool), opts)
@@ -57,7 +57,7 @@ public class MainVerticle extends VerticleBase {
                 logger.info("Deploying DevicesVerticle");
 
                 DeploymentOptions opts = new DeploymentOptions()
-                        .setInstances(2)
+                        .setInstances(1)
                         .setConfig(config().copy());
 
                 return vertx.deployVerticle(() -> new DevicesVerticle(sharedPool), opts)
@@ -96,7 +96,7 @@ public class MainVerticle extends VerticleBase {
         }
 
         private Future<JsonObject> loadConfig() {
-                JsonObject configJson = new JsonObject().put("path", configPath);
+                JsonObject configJson = new JsonObject().put("path", config_path);
                 ConfigStoreOptions fileStore = new ConfigStoreOptions().setType("file").setConfig(configJson);
 
                 ConfigStoreOptions envStore = new ConfigStoreOptions()
