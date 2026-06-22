@@ -203,7 +203,7 @@
                         <image>eclipse-temurin:25-jre</image>
                     </from>
                     <to>
-                        <image>remotecontrol-api</image>
+                        <image>remote-control-api</image>
                     </to>
                     <container>
                         <mainClass>io.vertx.launcher.application.VertxApplication</mainClass>
