@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: remote-control-api
+  namespace: remote-control
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: remote-control-api
+  namespace: remote-control
+spec:
+  selector:
+    app: remote-control-api
+  ports:
+    - name: http
+      port: 8080
+      targetPort: 8080
