@@ -1,0 +1,19 @@
+apiVersion: gateway.networking.k8s.io/v1
+kind: GatewayClass
+metadata:
+  name: devices-gc
+spec:
+  controllerName: gateway.envoyproxy.io/devices
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: devices-gateway
+  namespace: devices
+spec:
+  gatewayClassName: devices-gc
+  listeners:
+    - name: http
+      protocol: HTTP
+      port: 8082
+      hostname: devices.localhost
