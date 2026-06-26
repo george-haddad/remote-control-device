@@ -9,8 +9,8 @@ spec:
     helm:
       skipCrds: true
       values: |
-        envoyGateway:
-          config:
+        config:
+          envoyGateway:
             gateway:
               controllerName: gateway.envoyproxy.io/devices
     chart: gateway-helm
