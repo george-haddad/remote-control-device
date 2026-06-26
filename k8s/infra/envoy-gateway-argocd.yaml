@@ -26,3 +26,16 @@ spec:
     syncOptions:
       - CreateNamespace=true
       - ServerSideApply=true
+  ignoreDifferences:
+    - group: admissionregistration.k8s.io
+      kind: ValidatingAdmissionPolicy
+      name: safe-upgrades.gateway.networking.k8s.io
+      jqPathExpressions:
+        - '.metadata.labels["app.kubernetes.io/instance"]'
+        - '.metadata.annotations["argocd.argoproj.io/tracking-id"]'
+    - group: admissionregistration.k8s.io
+      kind: ValidatingAdmissionPolicyBinding
+      name: safe-upgrades.gateway.networking.k8s.io
+      jqPathExpressions:
+        - '.metadata.labels["app.kubernetes.io/instance"]'
+        - '.metadata.annotations["argocd.argoproj.io/tracking-id"]'
