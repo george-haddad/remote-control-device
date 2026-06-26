@@ -180,7 +180,7 @@ View the API documentation in `src/main/resources/device-spec.yaml`.
 Push docker image to local k3s registry
 
 ```shell script
-docker save  remotecontrol-api:latest | sudo k3s ctr images import -
+docker save  remote-control-api:latest | sudo k3s ctr images import -
 ```
 
 Stop / Start / Status of your k3s cluster
@@ -198,7 +198,7 @@ kubectl apply -f argocd-application.yaml
 Restart pod because image got updated
 
 ```shell script
-kubectl rollout restart deployment remotecontrol-api:latest -n remote-control
+kubectl rollout restart deployment devices-app -n remote-control
 ```
 
 ## APIs
