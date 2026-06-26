@@ -6,9 +6,6 @@ metadata:
 spec:
   project: default
   source:
-    repoURL: https://envoyproxy.github.io/gateway
-    chart: envoy-gateway
-    targetRevision: 1.8.1
     helm:
       skipCrds: true
       values: |
@@ -16,6 +13,9 @@ spec:
           config:
             gateway:
               controllerName: gateway.envoyproxy.io/devices
+    chart: gateway-helm
+    repoURL: docker.io/envoyproxy
+    targetRevision: v1.8.1
   destination:
     server: https://kubernetes.default.svc
     namespace: envoy-gateway-system-devices
@@ -25,3 +25,4 @@ spec:
       selfHeal: true
     syncOptions:
       - CreateNamespace=true
+      - ServerSideApply=true
