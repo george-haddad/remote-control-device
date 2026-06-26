@@ -16,4 +16,4 @@ spec:
     - name: http
       protocol: HTTP
       port: 8082
-      hostname: devices.localhost
+      hostname: "devices.localhost"
