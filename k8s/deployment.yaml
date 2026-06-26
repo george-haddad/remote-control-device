@@ -1,10 +1,10 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: remote-control-api
-  namespace: remote-control
+  name: devices-app
+  namespace: devices
   labels:
-    app: remote-control-api
+    app: devices-app
 spec:
   replicas: 1
   strategy:
@@ -17,14 +17,14 @@ spec:
       maxSurge: 1
   selector:
     matchLabels:
-      app: remote-control-api
+      app: devices
   template:
     metadata:
       labels:
-        app: remote-control-api
-        cluster: remote-control-cluster
+        app: devices
+        cluster: devices-cluster
     spec:
-      serviceAccountName: remote-control-api
+      serviceAccountName: devices-app
       containers:
         - name: remote-control-api
           image: remote-control-api:latest

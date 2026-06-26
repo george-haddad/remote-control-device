@@ -1,0 +1,41 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: envoy-gateway-devices
+  namespace: argocd
+spec:
+  project: default
+  source:
+    helm:
+      skipCrds: true
+      values: |
+        envoyGateway:
+          config:
+            gateway:
+              controllerName: gateway.envoyproxy.io/devices
+    chart: gateway-helm
+    repoURL: docker.io/envoyproxy
+    targetRevision: v1.8.1
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: envoy-gateway-system-devices
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true
+  ignoreDifferences:
+    - group: admissionregistration.k8s.io
+      kind: ValidatingAdmissionPolicy
+      name: safe-upgrades.gateway.networking.k8s.io
+      jqPathExpressions:
+        - '.metadata.labels["app.kubernetes.io/instance"]'
+        - '.metadata.annotations["argocd.argoproj.io/tracking-id"]'
+    - group: admissionregistration.k8s.io
+      kind: ValidatingAdmissionPolicyBinding
+      name: safe-upgrades.gateway.networking.k8s.io
+      jqPathExpressions:
+        - '.metadata.labels["app.kubernetes.io/instance"]'
+        - '.metadata.annotations["argocd.argoproj.io/tracking-id"]'

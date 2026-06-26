@@ -1,7 +1,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: remote-control
+  name: remote-control-devices
   namespace: argocd
 spec:
   project: default
@@ -9,11 +9,11 @@ spec:
     repoURL: "https://github.com/george-haddad/remote-control-device.git"
     targetRevision: HEAD
     path: "k8s"
-    directory:
-      recurse: true
+  #    directory:
+  #      recurse: true
   destination:
     server: "https://kubernetes.default.svc"
-    namespace: remote-control
+    namespace: devices
   syncPolicy:
     automated:
       prune: true

@@ -1,20 +1,20 @@
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
 metadata:
-  name: remote-control-api
-  namespace: remote-control
+  name: devices-route
+  namespace: devices
 spec:
   parentRefs:
-    - name: remote-control-gateway
+    - name: devices-gateway
   hostnames:
-    - "remote-control.localhost"
+    - "devices.localhost"
   rules:
     - backendRefs:
-        - group: ""
-          kind: Service
-          name: remote-control-api
-          port: 8080
+        - name: devices-app
+          port: 80
           weight: 1
+          group: ""
+          kind: Service
       matches:
         - path:
             type: PathPrefix
