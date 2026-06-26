@@ -195,6 +195,12 @@ Install homestead as an ArgoCD application
 kubectl apply -f argocd-application.yaml
 ```
 
+Restart pod because image got updated
+
+```shell script
+kubectl rollout restart deployment remotecontrol-api:latest -n remote-control
+```
+
 ## APIs
 
 The RESTful APIs follow OpenAPI spec v3.1.0
