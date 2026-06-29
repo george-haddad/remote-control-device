@@ -8,6 +8,8 @@
 
 A backend service that manages remote control devices via a RESTful API
 
+[![Java CI with Maven](https://github.com/george-haddad/remote-control-device/actions/workflows/maven.yml/badge.svg?branch=main)](https://github.com/george-haddad/remote-control-device/actions/workflows/maven.yml)
+
 ## Build System
 
 - Java Temurin JDK 25 LTS - programming language
