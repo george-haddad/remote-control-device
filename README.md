@@ -209,10 +209,12 @@ See `src/main/resources/device-spec.yaml`
 
 # Architecture
 
-**Top Most Level**
-![diag1](./docs/diag1.png)
+This is the kubernetes network layout. This application shares a cluster with another application and thus is using the **Separate Envoy Gateway Controllers** deployment mode. This is done to use the shared cluster as a multi-tenant cluster. The other applications may have a heavily modified envoy gateway. This keeps the gateways isolated from each other. See envoy docs on [deployment mode](https://gateway.envoyproxy.io/docs/tasks/operations/deployment-mode/#separate-envoy-gateway-controllers) for more information.
+
+![diag1](./docs/devices-k8s-layout.png)
 
 **Sequence for Add Device**
+
 ![diag2](./docs/diag2.png)
 
 ## Platform
@@ -291,36 +293,3 @@ Below is a short and concise list of commit prefixes with a short description.
   - Prefer schema namespace over prefixing table names.
   - Do not prefix tables.
   - Do not prefix columns.
-
-# TODOs
-
-A small note, most of these points are improvements for enabling massive scaling. Vertx already is built to be very fast and utilize all cores and virtual threads on the underlying hardware. Pushing this thing in a k8s cluster with a distributed DB and messaging system means you want to scale massively. The trade-off is A LOT of work, maintenance and test of patience. For the most part a simple non-k8s setup is mostly what is needed, of course with good backups and some redundancy.
-
-- Platform
-  - Implement the clustering either using vertx infinispan cluster or go full stateless nodes with distributed messaging instead of vertx event-bus
-  - Production grade data-base migrations with sqitch for scalability, release and full DB auditability
-  - Metrics like OpenTelemetry, Grafana, Loki ...etc.
-  - Load balancer on the API entry. Cloud native or in-house (nodejs/vertx/nginx)
-  - Versioning using a hybrid of trunk-ver + semver, see [https://trunkver.org/](https://trunkver.org/)
-  - CI/CD pipeline with the usual build, lint, packaging, code scans, code coverage ...etc.
-  - If we go clustering then k3s + argocd + GatewayAPI + Envoy + zitadel + StackGres ... there are many nice things out there
-  - Multi-tenancy with RowLevelSecurity in Postgres and stateless services design and PKI
-- API
-  - More fine grained specs in the OpenAPI spec
-  - Pagination support for very large lists
-  - Cache layer like Redis or ValKey so most unchanged calls just get from the cache
-- Auth
-  - Authentication platform to perform initial authentication, OIDC or OAuth based
-  - Requests cannot reach the verticles without an authenticated token
-  - Verticles validate tokens and roles via cached introspection end-point (or similar)
-  - Role Based Access Control is good, and token exchange RFC-8693 for m2m or ai-agent access
-- Testing
-  - More robust integration testing between verticles
-  - Testing timeouts between services and stressing them
-  - Stress, Load, Spike, Chaos, Mutation Testing automated
-  - Automated regression testing would be nice (sqitch is great for verifying DB change and rolling back issues after the fact)
-- Security
-  - Automated API scans using Owasp ZAP (in pipeline)
-  - Automated performance testing with [https://www.sitespeed.io/](https://www.sitespeed.io/)
-  - Automated SSL testing with something like sslyze see [https://github.com/nabla-c0d3/sslyze](https://github.com/nabla-c0d3/sslyze)
-  - Automated backups and automated DR recovery (wow we became critical infrastructure at this point)
