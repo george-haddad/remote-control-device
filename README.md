@@ -209,10 +209,12 @@ See `src/main/resources/device-spec.yaml`
 
 # Architecture
 
-**Top Most Level**
+This is the kubernetes network layout. This application shares a cluster with another application and thus is using the **Separate Envoy Gateway Controllers** deployment mode. This is done to use the shared cluster as a multi-tenant cluster. The other applications may have a heavily modified envoy gateway. This keeps the gateways isolated from each other. See envoy docs on [deployment mode](https://gateway.envoyproxy.io/docs/tasks/operations/deployment-mode/#separate-envoy-gateway-controllers) for more information.
+
 ![diag1](./docs/devices-k8s-layout.png)
 
 **Sequence for Add Device**
+
 ![diag2](./docs/diag2.png)
 
 ## Platform
