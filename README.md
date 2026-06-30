@@ -241,6 +241,8 @@ How the versioning flow looks like:
 11. Add resulting container version to k8s deployment manifest, commit and push
 12. ArgoCD monitors new image declaration and pulls image to cluster for rollout
 
+![diag3](./docs/cicd-flow.png)
+
 ## Platform
 
 The 2 verticles are packaged together in the same container. The ApiVerticle is accessible via an HttpServer to process API requests. The DeviceVerticle is connected to the ApiVerticle via the vertx event-bus under a specific address. This verticle consumes messages from the ApiVerticle and owns persistence to the database.
