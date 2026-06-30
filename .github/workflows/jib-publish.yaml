@@ -16,6 +16,5 @@ jobs:
           tag-name: ${{ github.event.release.tag_name }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           USERNAME: ${{ github.actor }}
-          PASSWORD: ${{ secrets.JIB_PUBLISH_PAT }}
-#          PASSWORD: ${{ secrets.GITHUB_TOKEN }}
+          PASSWORD: ${{ secrets.GITHUB_TOKEN }}
           java-version: 25
