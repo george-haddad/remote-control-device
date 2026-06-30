@@ -41,6 +41,7 @@ jobs:
         java-version: '25'
         cache: 'maven'
 
+    # Get the version from pom file
     - name: Get SemVer from POM
       id: get_version
       run: |
@@ -48,7 +49,23 @@ jobs:
         echo "POM_VERSION=$VERSION" >> $GITHUB_ENV
         echo "Got SemVer $VERSION"
 
+    # Check if release already exists
+    - name: Check if release already exists
+      id: release_check
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        if gh release view v${{ env.POM_VERSION }} &>/dev/null; then
+          echo "exists=true" >> $GITHUB_OUTPUT
+          echo ">> Version v${{ env.POM_VERSION }} has already been published. Subsequent steps will be skipped."
+        else
+          echo "exists=false" >> $GITHUB_OUTPUT
+          echo ">> Version v${{ env.POM_VERSION }} is new! Proceeding to publish."
+        fi
+
+    # Generate a trunkver
     - name: Generate Trunkver
+      if: steps.release_check.outputs.exists != 'true'
       id: generate_trunkver
       run: |
         COMMIT_TS=$(git show -s --format=%cd --date=format:'%Y%m%d%H%M%S' HEAD)
@@ -56,20 +73,18 @@ jobs:
         TRUNKVER="${COMMIT_TS}.0.0-g${SHORT_SHA}-${{ github.run_id }}"
         echo "TRUNKVER=$TRUNKVER" >> $GITHUB_ENV
         echo "Generated trunkver $TRUNKVER"
-
+    
+    # Create a github release
     - name: Create GitHub Release
+      if: steps.release_check.outputs.exists != 'true'
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
-        # Create release if not exists
-        if ! gh release view v${{ env.POM_VERSION }} &>/dev/null; then
-          echo "Creating new release v${{ env.POM_VERSION }}"
-          gh release create v${{ env.POM_VERSION }} --title "v${{ env.POM_VERSION }}" --generate-notes
-        else
-          echo "Release v${{ env.POM_VERSION }} already exists. Skipping."
-        fi
-
+        gh release create v${{ env.POM_VERSION }} --title "v${{ env.POM_VERSION }}" --generate-notes
+    
+    # Publish container to github registry
     - name: Publish with Maven via jib
+      if: steps.release_check.outputs.exists != 'true'
       run: >
         mvn -B compile jib:build
         -Djib.serialize=true
