@@ -203,7 +203,8 @@
                         <image>eclipse-temurin:25-jre</image>
                     </from>
                     <to>
-                        <image>remote-control-api</image>
+                        <image>gcr.io/george-haddad/remote-control-device</image>
+                        <credHelper>gcr</credHelper>
                     </to>
                     <container>
                         <mainClass>io.vertx.launcher.application.VertxApplication</mainClass>
