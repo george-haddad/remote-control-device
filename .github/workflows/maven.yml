@@ -46,6 +46,7 @@ jobs:
       run: |
         VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
         echo "POM_VERSION=$VERSION" >> $GITHUB_ENV
+        echo "Got SemVer $VERSION"
 
     - name: Generate Trunkver
       id: generate_trunkver
@@ -54,6 +55,7 @@ jobs:
         SHORT_SHA=$(git rev-parse --short=7 HEAD)
         TRUNKVER="${COMMIT_TS}.0.0-g${SHORT_SHA}-${{ github.run_id }}"
         echo "TRUNKVER=$TRUNKVER" >> $GITHUB_ENV
+        echo "Generated trunkver $TRUNKVER"
 
     - name: Create GitHub Release
       env:
@@ -62,7 +64,7 @@ jobs:
         # Create release if not exists
         if ! gh release view v${{ env.POM_VERSION }} &>/dev/null; then
           echo "Creating new release v${{ env.POM_VERSION }}"
-          gh release create v${{ env.POM_VERSION }} --title "Release v${{ env.POM_VERSION }}" --generate-notes
+          gh release create v${{ env.POM_VERSION }} --title "v${{ env.POM_VERSION }}" --generate-notes
         else
           echo "Release v${{ env.POM_VERSION }} already exists. Skipping."
         fi
