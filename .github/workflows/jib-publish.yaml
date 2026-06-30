@@ -1,4 +1,4 @@
-name: JIB container publish
+name: jib publish
 
 on:
   release:
