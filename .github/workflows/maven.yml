@@ -1,4 +1,4 @@
-name: maven build
+name: ci/cd pipeline
 
 on:
   push:
@@ -9,13 +9,68 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
     - uses: actions/checkout@v6
+
     - uses: actions/setup-java@v5
       with:
         distribution: 'temurin'
         java-version: '25'
         cache: 'maven'
-    - name: Build with Maven
+        
+    - name: Build and Test with Maven
       run: mvn -B clean package --file pom.xml
+
+  publish:
+    needs: build
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    
+    permissions:
+      contents: write   
+      packages: write   
+
+    steps:
+    - uses: actions/checkout@v6
+      with:
+        fetch-depth: 0
+    
+    - uses: actions/setup-java@v5
+      with:
+        distribution: 'temurin'
+        java-version: '25'
+        cache: 'maven'
+
+    - name: Get SemVer from POM
+      id: get_version
+      run: |
+        VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
+        echo "POM_VERSION=$VERSION" >> $GITHUB_ENV
+
+    - name: Generate Trunkver
+      id: generate_trunkver
+      run: |
+        COMMIT_TS=$(git show -s --format=%cd --date=format:'%Y%m%d%H%M%S' HEAD)
+        SHORT_SHA=$(git rev-parse --short=7 HEAD)
+        TRUNKVER="${COMMIT_TS}.0.0-g${SHORT_SHA}-${{ github.run_id }}"
+        echo "TRUNKVER=$TRUNKVER" >> $GITHUB_ENV
+
+    - name: Create GitHub Release
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        # Create release if not exists
+        if ! gh release view v${{ env.POM_VERSION }} &>/dev/null; then
+          echo "Creating new release v${{ env.POM_VERSION }}"
+          gh release create v${{ env.POM_VERSION }} --title "Release v${{ env.POM_VERSION }}" --generate-notes
+        else
+          echo "Release v${{ env.POM_VERSION }} already exists. Skipping."
+        fi
+
+    - name: Publish with Maven via jib
+      run: >
+        mvn -B compile jib:build
+        -Djib.serialize=true
+        -Djib.to.auth.username=${{ github.actor }}
+        -Djib.to.auth.password=${{ secrets.GITHUB_TOKEN }}
+        -Djib.to.image=ghcr.io/george-haddad/remote-control-device:${{ env.POM_VERSION }}-${{ env.TRUNKVER }}
