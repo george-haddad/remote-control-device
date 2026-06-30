@@ -26,8 +26,8 @@ spec:
     spec:
       serviceAccountName: devices-app
       containers:
-        - name: remote-control-api
-          image: remote-control-api:latest
+        - name: remote-control-device
+          image: ghcr.io/george-haddad/remote-control-device:0.0.9-alpha-20260630151114.0.0-ge993e38-28446913663
           imagePullPolicy: IfNotPresent
           env:
             - name: HTTP_PORT
