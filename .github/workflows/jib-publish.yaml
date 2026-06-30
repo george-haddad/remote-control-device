@@ -24,3 +24,4 @@ jobs:
         mvn -B compile jib:build --file pom.xml
         -Djib.to.auth.username=${{ github.actor }}
         -Djib.to.auth.password=${{ secrets.GITHUB_TOKEN }}
+        -Djib.serialize=true
