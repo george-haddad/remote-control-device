@@ -204,8 +204,12 @@
                     </from>
                     <to>
                         <image>gcr.io/george-haddad/remote-control-device</image>
-                        <credHelper>gcr</credHelper>
+                        <auth>
+                            <username>${env.REGISTRY_USERNAME}</username>
+                            <password>${env.REGISTRY_PASSWORD}</password>
+                        </auth>
                     </to>
+
                     <container>
                         <mainClass>io.vertx.launcher.application.VertxApplication</mainClass>
                         <args>
