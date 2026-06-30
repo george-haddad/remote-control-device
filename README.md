@@ -219,6 +219,28 @@ This is the kubernetes network layout. This application shares a cluster with an
 
 ![diag2](./docs/diag2.png)
 
+## CI/CD
+
+This application uses a mix of SemVer and TrunkVer.
+
+- SemVer: Used to version the main application and to indicate any backwards compatibility
+- TrunkVer: Used to version to container images while still using SemVer as a prefix
+
+How the versioning flow looks like:
+
+1. A git branch is created
+2. Code is committed to the branch using commit prefix convention
+3. Pull Request is created and labeled
+4. Version in `pom.xml` file is updated
+5. Pull Request is merged to main branch
+6. Pipeline runs and repo is tested and built
+7. Version is checked in pom file, if release is new create
+8. Github release is automatically created, pom version is SemVer
+9. Container is publish to registry using SemVer+TrunkVer
+10. Changelog is created using labels from Pull Requests
+11. Add resulting container version to k8s deployment manifest, commit and push
+12. ArgoCD monitors new image declaration and pulls image to cluster for rollout
+
 ## Platform
 
 The 2 verticles are packaged together in the same container. The ApiVerticle is accessible via an HttpServer to process API requests. The DeviceVerticle is connected to the ApiVerticle via the vertx event-bus under a specific address. This verticle consumes messages from the ApiVerticle and owns persistence to the database.
