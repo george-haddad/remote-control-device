@@ -6,7 +6,7 @@
 
     <groupId>com.remotecontrol</groupId>
     <artifactId>api</artifactId>
-    <version>0.0.9-alpha</version>
+    <version>0.0.10</version>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
