@@ -16,6 +16,8 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.pgclient.PgBuilder;
 import io.vertx.pgclient.PgConnectOptions;
+import io.vertx.rabbitmq.RabbitMQClient;
+import io.vertx.rabbitmq.RabbitMQOptions;
 import io.vertx.sqlclient.Pool;
 import io.vertx.sqlclient.PoolOptions;
 
@@ -24,11 +26,13 @@ public class MainVerticle extends VerticleBase {
         private static final Logger logger = LoggerFactory.getLogger("main");
         private final String config_path = "config.json";
         private Pool sharedPool;
+        private RabbitMQClient rabbitClient;
 
         @Override
         public Future<?> start() {
                 return loadConfig()
                         .compose(config -> createPool())
+                        .compose(pool -> createRabbitMqClient())
                         .compose(pool -> deployApiVerticle())
                         .compose(id -> deployDevicesVerticle())
                         .compose(id -> {
@@ -95,6 +99,30 @@ public class MainVerticle extends VerticleBase {
                 return Future.succeededFuture(sharedPool);
         }
 
+        private Future<Void> createRabbitMqClient() {
+                RabbitMQOptions opts = new RabbitMQOptions();
+                opts.setUser(config().getString("RABBIT_MQ_USER"));
+                opts.setPassword(config().getString("RABBIT_MQ_PASS"));
+                opts.setHost(config().getString("RABBIT_MQ_HOST"));
+                opts.setPort(config().getInteger("RABBIT_MQ_PORT").intValue());
+                opts.setVirtualHost(config().getString("RABBIT_MQ_VHOST"));
+                opts.setConnectionTimeout(6000); // in milliseconds
+                opts.setRequestedHeartbeat(60); // in seconds
+                opts.setHandshakeTimeout(6000);   // in milliseconds
+                opts.setRequestedChannelMax(5);
+                opts.setNetworkRecoveryInterval(500); // in milliseconds
+                opts.setAutomaticRecoveryEnabled(true);
+
+                this.rabbitClient = RabbitMQClient.create(vertx, opts);
+                return rabbitClient.start()
+                        .onSuccess(ok -> {
+                                logger.info("RabbitMQ connection successfully created");
+                        })
+                        .onFailure(err -> {
+                                logger.error("RabbitMQ startup failed err={}", err.getMessage(), err);
+                        });
+        }
+
         private Future<JsonObject> loadConfig() {
                 JsonObject configJson = new JsonObject().put("path", config_path);
                 ConfigStoreOptions fileStore = new ConfigStoreOptions().setType("file").setConfig(configJson);
@@ -109,7 +137,16 @@ public class MainVerticle extends VerticleBase {
                                         .add("DB_NAME")
                                         .add("DB_USER")
                                         .add("DB_PASS")
-                                        .add("HTTP_PORT")));
+                                        .add("HTTP_PORT")
+                                        .add("RABBIT_MQ_USER")
+                                        .add("RABBIT_MQ_PASS")
+                                        .add("RABBIT_MQ_HOST")
+                                        .add("RABBIT_MQ_PORT")
+                                        .add("RABBIT_MQ_VHOST")
+                                        .add("RABBIT_MQ_TENANT_QUEUE")
+                                        .add("RABBIT_MQ_RESIDENCE_QUEUE")
+                                        .add("RABBIT_MQ_MEDIA_QUEUE")
+                                ));
 
                 ConfigRetrieverOptions retrieverOpts = new ConfigRetrieverOptions()
                         .addStore(fileStore)  // load first
