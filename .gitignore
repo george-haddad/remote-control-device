@@ -81,4 +81,6 @@ buildNumber.properties
 .history
 .ionide
 
+# Temp files I need in the moment and then schedule to delete later
+deleteme.*
 # End of https://www.toptal.com/developers/gitignore/api/linux,visualstudiocode,java,maven,dotenv
