@@ -5,5 +5,13 @@
     "DB_NAME": "remote-control",
     "DB_USER": "devicebackend",
     "DB_PASS": "Tablet9-Saddling-Undocked-Glance",
-    "HTTP_PORT": 8080
+    "HTTP_PORT": 8080,
+    "RABBITMQ_DEFAULT_USER": "admin",
+    "RABBITMQ_DEFAULT_PASS": "admin",
+    "RABBIT_MQ_USER": "devicesbackend",
+    "RABBIT_MQ_PASS": "Xerox1_Clay_Fascism_Gallery_Lecturer",
+    "RABBIT_MQ_HOST": "rabbitmq",
+    "RABBIT_MQ_PORT": "5672",
+    "RABBIT_MQ_VHOST": "/devices",
+    "RABBIT_MQ_QUEUE": "rpc_queue_devices"
 }

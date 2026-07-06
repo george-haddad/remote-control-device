@@ -95,6 +95,12 @@
             <version>${vertx.version}</version>
         </dependency>
 
+        <dependency>
+            <groupId>io.vertx</groupId>
+            <artifactId>vertx-rabbitmq-client</artifactId>
+            <version>${vertx.version}</version>
+        </dependency>
+
         <!-- Other -->
 
         <dependency>
@@ -203,7 +209,7 @@
                         <image>eclipse-temurin:25-jre</image>
                     </from>
                     <to>
-                        <image>ghcr.io/george-haddad/remote-control-device</image>
+                        <image>remote-control-device</image>
                     </to>
                     <container>
                         <mainClass>io.vertx.launcher.application.VertxApplication</mainClass>
