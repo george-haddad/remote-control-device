@@ -78,16 +78,16 @@ public class ApiVerticle extends VerticleBase {
                         promise -> promise.complete(Status.OK())
                 );
 
-                // logger.info("Creating health-check on database server ...");
+                logger.info("Creating health-check on database server ...");
 
-                // hc.register(
-                //         "database",
-                //         2000L,
-                //         promise -> sharedPool.getConnection()
-                //                 .compose(SqlConnection::close)
-                //                 .<Status>mapEmpty()
-                //                 .onComplete(promise)
-                // );
+                hc.register(
+                        "database",
+                        2000L,
+                        promise -> sharedPool.getConnection()
+                                .compose(SqlConnection::close)
+                                .<Status>mapEmpty()
+                                .onComplete(promise)
+                );
 
                 logger.info("Creating health-check on event-bus address={} ...", "remotecontrol.devices");
 
