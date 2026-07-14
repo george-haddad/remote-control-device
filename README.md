@@ -4,7 +4,7 @@
 ![postgresql](https://img.shields.io/badge/PostgreSQL-18.4-316192?style=for-the-badge&logo=postgresql&logoColor=white)
 ![docker](https://img.shields.io/badge/docker-29.5.3-316192?style=for-the-badge&logo=docker&logoColor=white)
 ![java](https://img.shields.io/badge/java-25.0.3-orange?style=for-the-badge&logoColor=white)
-![maven](https://img.shields.io/badge/maven-3.9.12-orange?style=for-the-badge&logoColor=white)
+![maven](https://img.shields.io/badge/maven-3.9.16-orange?style=for-the-badge&logoColor=white)
 
 A backend service that manages remote control devices via a RESTful API
 
@@ -13,7 +13,7 @@ A backend service that manages remote control devices via a RESTful API
 ## Build System
 
 - Java Temurin JDK 25 LTS - programming language
-- Apache Maven 3.9.12 - build automation
+- Apache Maven 3.9.16 - build automation
 - Docker 29.5.3 - containers (alpine)
 - Editorconfig - source formatting
 
