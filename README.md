@@ -179,7 +179,7 @@ View the API documentation in `src/main/resources/device-spec.yaml`.
 
 ## Kubernetes
 
-**Note:* The below is not accurate anymore, this was the case when I was doing things locally and pushing the images directly to my k3s cluster. Since I installed ArgoCD I started pushing the images to the github registry and ArgoCD picks up the versioned changes from there and auto-deploys to my k3s cluster; gitops style.
+**Note:** The below is not accurate anymore, this was the case when I was doing things locally and pushing the images directly to my k3s cluster. Since I installed ArgoCD I started pushing the images to the github registry and ArgoCD picks up the versioned changes from there and auto-deploys to my k3s cluster; gitops style.
 
 Push docker image to local k3s registry
 
@@ -193,7 +193,7 @@ Stop / Start / Status of your k3s cluster
 sudo systemctl [stop|start|status] k3s
 ```
 
-Install homestead as an ArgoCD application
+Install the remote-control-device as an ArgoCD application
 
 ```shell script
 kubectl apply -f argocd-application.yaml
