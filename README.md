@@ -1,6 +1,6 @@
 # remote-control-device
 
-![vertx](https://img.shields.io/badge/vert.x-5.1.4-purple.svg?style=for-the-badge&logo=eclipsevertdotx&logoColor=white?style=for-the-badge)
+![vertx](https://img.shields.io/badge/vert.x-5.1.5-purple.svg?style=for-the-badge&logo=eclipsevertdotx&logoColor=white?style=for-the-badge)
 ![postgresql](https://img.shields.io/badge/PostgreSQL-18.4-316192?style=for-the-badge&logo=postgresql&logoColor=white)
 ![docker](https://img.shields.io/badge/docker-29.5.3-316192?style=for-the-badge&logo=docker&logoColor=white)
 ![java](https://img.shields.io/badge/java-25.0.3-orange?style=for-the-badge&logoColor=white)
@@ -19,7 +19,7 @@ A backend service that manages remote control devices via a RESTful API
 
 ## Platform
 
-- Eclipse Vert.x 5.1.4
+- Eclipse Vert.x 5.1.5
 - PostgreSQL 18.4
 
 ## Quick Start
@@ -178,6 +178,8 @@ View the API documentation in `src/main/resources/device-spec.yaml`.
 **Note**: The reason the spec file is hidden away there is because the backend uses the spec to create its router with route validations as described in the spec. You may upload the spec into an OpenAPI 3.1 render such as [Swagger Editor](https://editor.swagger.io/) or any other tool that supports the spec.
 
 ## Kubernetes
+
+**Note:* The below is not accurate anymore, this was the case when I was doing things locally and pushing the images directly to my k3s cluster. Since I installed ArgoCD I started pushing the images to the github registry and ArgoCD picks up the versioned changes from there and auto-deploys to my k3s cluster; gitops style.
 
 Push docker image to local k3s registry
 
